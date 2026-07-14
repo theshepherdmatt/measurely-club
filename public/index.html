@@ -339,6 +339,7 @@
     }
     #quickAcousticsBar.mobile-sheet-open { transform: translateX(0) !important; }
     #quickAcousticsBar .segmented { flex-direction: column; }
+    #quickAcousticsBar #cameraViews { flex-direction: column; }
     #quickAcousticsBar .qa-waves-toggle[style*="width: 1px"] { width: auto !important; height: 1px; }
 
     #sidebar {
@@ -423,16 +424,6 @@
 
     <img id="clubLogo" src="./assets/lisle-acoustics-logo.svg" alt="Lisle Acoustics" style="position: absolute; top: 20px; left: 24px; z-index: 10; height: 56px; width: auto; pointer-events: none;">
 
-    <!-- Camera view presets — flyToRoomPos() presets computed in app.js
-         from live room geometry, so views stay correct as the venue is
-         resized or the booth moves. -->
-    <div id="cameraViews" style="position: absolute; top: 20px; right: 24px; z-index: 10; background: var(--configbar-bg); padding: 3px; border: 1px solid var(--viewport-border); display: flex; gap: 4px; flex-wrap: wrap; justify-content: flex-end; max-width: 55vw;">
-      <button type="button" class="seg-btn active" data-view="overview" style="padding: 6px 12px; white-space: nowrap;">Overview</button>
-      <button type="button" class="seg-btn" data-view="dj" style="padding: 6px 12px; white-space: nowrap;">DJ</button>
-      <button type="button" class="seg-btn" data-view="floor" style="padding: 6px 12px; white-space: nowrap;">Dancefloor</button>
-      <button type="button" class="seg-btn" data-view="top" style="padding: 6px 12px; white-space: nowrap;">Top</button>
-    </div>
-
     <div id="waveKey" style="position: absolute; top: 80px; left: 32px; z-index: 10; background: var(--configbar-bg); padding: 12px 16px; border: 1px solid var(--viewport-border); color: var(--viewport-text-muted); font-size: 11px; font-weight: 500; display: flex; flex-direction: column; gap: 8px; border-radius: 4px;">
       <div style="display: flex; align-items: center; gap: 8px;">
         <div style="width: 12px; height: 12px; border-radius: 50%; border: 2px solid var(--brand-accent);"></div>
@@ -454,6 +445,16 @@
       <div class="qa-waves-toggle" style="width: 1px; background: var(--viewport-border); margin: 2px 0;"></div>
       <button type="button" class="seg-btn active qa-waves-toggle" id="btnToggleCrowd" style="padding: 6px 16px; white-space: nowrap; border-radius: 0;">Crowd</button>
       <button type="button" class="seg-btn qa-waves-toggle" id="btnToggleDisco" style="padding: 6px 16px; white-space: nowrap; border-radius: 0;">Disco</button>
+      <!-- Camera view presets — flyToRoomPos() presets computed in app.js
+           from live room geometry, so views stay correct as the venue is
+           resized or the booth moves. Condensed labels to fit the bar. -->
+      <div class="qa-waves-toggle" style="width: 1px; background: var(--viewport-border); margin: 2px 0;"></div>
+      <div id="cameraViews" style="display: flex; gap: 4px;">
+        <button type="button" class="seg-btn active" data-view="overview" style="padding: 6px 12px; white-space: nowrap;">Room</button>
+        <button type="button" class="seg-btn" data-view="dj" style="padding: 6px 12px; white-space: nowrap;">DJ</button>
+        <button type="button" class="seg-btn" data-view="floor" style="padding: 6px 12px; white-space: nowrap;">Floor</button>
+        <button type="button" class="seg-btn" data-view="top" style="padding: 6px 12px; white-space: nowrap;">Top</button>
+      </div>
     </div>
   </div>
   <div id="sidebar">
