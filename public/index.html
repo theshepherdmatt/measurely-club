@@ -45,6 +45,26 @@
   }
   .club-section { margin-bottom: 28px; }
 
+  /* SCL's shared .sbox-btn (Rear PA on/off, density/capacity toggles) ships
+     with a rounded teal-outline "active" state (sidebar-controls.css) —
+     right for hi-fi products, but off-brand for club/ecommerce's flat
+     black-and-white square language (teal reserved for CTAs only, not
+     toggle chrome). Overridden at the consumer level per the engine's own
+     load-order contract (tokens -> engine CSS -> consumer overrides),
+     matching the .seg-btn active-fill convention already used below. */
+  .sbox-btn {
+    border-radius: 0;
+    border: 1px solid #1a1a1a;
+    background: #ffffff;
+    color: #1a1a1a;
+  }
+  .sbox-btn:hover { background: #f2f2f2; border-color: #1a1a1a; }
+  .sbox-btn.active {
+    background: #1a1a1a;
+    color: #ffffff;
+    border-color: #1a1a1a;
+  }
+
   /* Floating UI from ecommerce */
   .segmented {
     display: flex;
