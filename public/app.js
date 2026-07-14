@@ -1,4 +1,4 @@
-import { initRoom3D, OVERLAY_META } from './engine/js/room3d.js?v=30';
+import { initRoom3D, OVERLAY_META } from './engine/js/room3d.js?v=31';
 
 // Plain state object: the single source of truth for the room viewport.
 // getRoomData() below reads straight from this on every rebuild.
@@ -34,6 +34,8 @@ const state = {
   // Bass bins: mono centre-stack under the booth, not spaced L/R pairs —
   // avoids power-alley cancellation across the floor.
   bass_bin_count: 2,
+  // 'centre' (under the booth) or 'corners' (split to both front corners).
+  bass_bin_placement: 'centre',
   // DJ booth distance from the front wall (cable-run clearance).
   booth_front_m: 2.0,
   // pa_top wall-bracket mount height (permanent install). Tilt is derived
@@ -56,6 +58,7 @@ function getRoomData() {
     geometry: state.geometry,
     setup: state.setup,
     bass_bin_count: state.bass_bin_count,
+    bass_bin_placement: state.bass_bin_placement,
     booth_front_m: state.booth_front_m,
     pa_mount_height_m: state.pa_mount_height_m,
     crowd_limit: state.crowd_limit,
@@ -94,6 +97,7 @@ const clubAPI = SCL?.renderClubSection('clubMount', {
 SCL?.renderClubSpeakersSection('clubSpeakersMount', {
   state: {
     bass_bin_count: state.bass_bin_count,
+    bass_bin_placement: state.bass_bin_placement,
     spk_spacing_m: state.setup.spk_spacing_m,
     spk_front_m: state.setup.spk_front_m,
     booth_front_m: state.booth_front_m,
@@ -101,8 +105,9 @@ SCL?.renderClubSpeakersSection('clubSpeakersMount', {
     toe_in_deg: state.setup.toe_in_deg,
     rear_pa: state.rear_pa,
   },
-  onChange({ bass_bin_count, spk_spacing_m, spk_front_m, booth_front_m, pa_mount_height_m, toe_in_deg, rear_pa }) {
+  onChange({ bass_bin_count, bass_bin_placement, spk_spacing_m, spk_front_m, booth_front_m, pa_mount_height_m, toe_in_deg, rear_pa }) {
     state.bass_bin_count = bass_bin_count;
+    state.bass_bin_placement = bass_bin_placement;
     state.setup.spk_spacing_m = spk_spacing_m;
     state.setup.spk_front_m = spk_front_m;
     state.booth_front_m = booth_front_m;
