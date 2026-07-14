@@ -1,4 +1,4 @@
-import { initRoom3D, OVERLAY_META } from './engine/js/room3d.js?v=9';
+import { initRoom3D, OVERLAY_META } from './engine/js/room3d.js?v=10';
 
 // Plain state object: the single source of truth for the room viewport.
 // getRoomData() below reads straight from this on every rebuild.
@@ -33,7 +33,7 @@ const state = {
   // avoids power-alley cancellation across the floor.
   bass_bin_count: 2,
   // DJ booth distance from the front wall (cable-run clearance).
-  booth_front_m: 0.75,
+  booth_front_m: 2.0,
   // pa_top wall-bracket mount height (permanent install). Tilt is derived
   // automatically in the engine — aimed at ear height on the dance floor.
   pa_mount_height_m: 3.0,
