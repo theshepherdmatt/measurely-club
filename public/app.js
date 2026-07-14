@@ -17,14 +17,19 @@ const state = {
     ceiling_slant_direction: 'left_to_right',
   },
   setup: {
-    speaker_type: 'floorstander',
+    // Two tops flanking the booth — coverage-driven, not imaging-driven.
+    // Bass bins (mono, stacked centre under the booth) aren't wired up
+    // yet: the engine's existing room.subwoofer path renders a single
+    // small home-rack-style sub, not a 2-4-high club stack. That's the
+    // next piece of placement work, not done here — see README.md roadmap.
+    speaker_type: 'pa_top',
     spk_spacing_m: 6,
     spk_front_m: 1.0,
     tweeter_height_m: 2.2,
     toe_in_deg: 0,
     listener_front_m: 7.5,
     listener_offset_m: 0,
-    subwoofer: true,
+    subwoofer: false,
   },
   floor_material: 'hard',
 };
