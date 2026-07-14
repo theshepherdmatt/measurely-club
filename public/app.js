@@ -1,4 +1,4 @@
-import { initRoom3D, OVERLAY_META } from './engine/js/room3d.js?v=4';
+import { initRoom3D, OVERLAY_META } from './engine/js/room3d.js?v=5';
 
 // Plain state object: the single source of truth for the room viewport.
 // getRoomData() below reads straight from this on every rebuild.
@@ -32,6 +32,8 @@ const state = {
   // Bass bins: mono centre-stack under the booth, not spaced L/R pairs —
   // avoids power-alley cancellation across the floor.
   bass_bin_count: 2,
+  // DJ booth distance from the front wall (cable-run clearance).
+  booth_front_m: 0.75,
   // Dance floor capacity density: 'comfortable' 2/m² | 'packed' 4/m².
   density: 'comfortable',
   floor_material: 'hard',
@@ -48,6 +50,7 @@ function getRoomData() {
     geometry: state.geometry,
     setup: state.setup,
     bass_bin_count: state.bass_bin_count,
+    booth_front_m: state.booth_front_m,
     environment: {
       floor_material: state.floor_material,
       furniture: { opt_area_rug: false, opt_sofa: false, opt_coffee_table: false, seating_type: 'none' },
@@ -85,10 +88,12 @@ SCL?.renderClubSpeakersSection('clubSpeakersMount', {
   state: {
     spk_spacing_m: state.setup.spk_spacing_m,
     spk_front_m: state.setup.spk_front_m,
+    booth_front_m: state.booth_front_m,
   },
-  onChange({ spk_spacing_m, spk_front_m }) {
+  onChange({ spk_spacing_m, spk_front_m, booth_front_m }) {
     state.setup.spk_spacing_m = spk_spacing_m;
     state.setup.spk_front_m = spk_front_m;
+    state.booth_front_m = booth_front_m;
     room?.update?.();
   },
 });
