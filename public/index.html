@@ -300,14 +300,18 @@
        so opening the left drawer left the room glued underneath it while
        an empty gap of exposed page-black opened on the opposite side.
        --room-shift-left/-right (set by app.js) default to 0; only one is
-       ever non-zero since the drawers are mutually exclusive. Overrides
-       the inline inset:0 on this element's own left/right specifically
-       (over-constrained left+right+implicit width resolves in the
-       property's favour, same reasoning as portrait's height override). */
+       ever non-zero since the drawers are mutually exclusive.
+       !important required: this element carries an inline
+       style="position:absolute;inset:0" (sets left/right/top/bottom
+       directly), which beats an external stylesheet rule for those same
+       longhands in the cascade regardless of selector specificity --
+       without !important these rules were simply never applied at all,
+       not "de-prioritized". Same issue ecommerce's own CSS flags for its
+       inline-styled elements (#quickAcousticsBar etc). */
     #roomViewport {
-      height: 100%;
-      left: var(--room-shift-left, 0px);
-      right: var(--room-shift-right, 0px);
+      height: 100% !important;
+      left: var(--room-shift-left, 0px) !important;
+      right: var(--room-shift-right, 0px) !important;
       transition: left 0.25s ease, right 0.25s ease;
     }
 
@@ -493,6 +497,6 @@
 <button type="button" class="landscape-edge-handle landscape-edge-handle-left" id="landscapeOverlaysHandle" aria-label="Acoustic overlays">Overlays</button>
 <button type="button" class="landscape-edge-handle landscape-edge-handle-right" id="landscapeSidebarHandle" aria-label="Room settings">Menu</button>
 
-<script type="module" src="./app.js?v=16"></script>
+<script type="module" src="./app.js?v=17"></script>
 </body>
 </html>
