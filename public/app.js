@@ -1,4 +1,4 @@
-import { initRoom3D, OVERLAY_META } from './engine/js/room3d.js?v=39';
+import { initRoom3D, OVERLAY_META } from './engine/js/room3d.js?v=40';
 
 // Plain state object: the single source of truth for the room viewport.
 // getRoomData() below reads straight from this on every rebuild.
@@ -49,6 +49,10 @@ const state = {
   crowd_limit: 200,
   floor_material: 'hard',
   rear_pa: false,
+  // 'turntables' (2), 'cdj' (2), or 'both' (4, standard mixed layout).
+  deck_config: 'both',
+  // Platform under the desk that also elevates the DJ figure/monitors.
+  dj_riser_enabled: true,
 };
 
 function _centreListener() {
@@ -68,6 +72,8 @@ function getRoomData() {
     pa_mount_height_m: state.pa_mount_height_m,
     crowd_limit: state.crowd_limit,
     rear_pa: state.rear_pa,
+    deck_config: state.deck_config,
+    dj_riser_enabled: state.dj_riser_enabled,
     environment: {
       floor_material: state.floor_material,
       furniture: { opt_area_rug: false, opt_sofa: false, opt_coffee_table: false, seating_type: 'none' },
@@ -101,26 +107,38 @@ const clubAPI = SCL?.renderClubSection('clubMount', {
 
 SCL?.renderClubSpeakersSection('clubSpeakersMount', {
   state: {
-    bass_bin_count: state.bass_bin_count,
-    bass_bin_placement: state.bass_bin_placement,
     spk_spacing_m: state.setup.spk_spacing_m,
-    spk_front_m: state.setup.spk_front_m,
-    booth_front_m: state.booth_front_m,
-    booth_offset_m: state.booth_offset_m,
     pa_mount_height_m: state.pa_mount_height_m,
     toe_in_deg: state.setup.toe_in_deg,
     rear_pa: state.rear_pa,
   },
-  onChange({ bass_bin_count, bass_bin_placement, spk_spacing_m, spk_front_m, booth_front_m, booth_offset_m, pa_mount_height_m, toe_in_deg, rear_pa }) {
-    state.bass_bin_count = bass_bin_count;
-    state.bass_bin_placement = bass_bin_placement;
+  onChange({ spk_spacing_m, pa_mount_height_m, toe_in_deg, rear_pa }) {
     state.setup.spk_spacing_m = spk_spacing_m;
-    state.setup.spk_front_m = spk_front_m;
-    state.booth_front_m = booth_front_m;
-    state.booth_offset_m = booth_offset_m;
     state.pa_mount_height_m = pa_mount_height_m;
     state.setup.toe_in_deg = toe_in_deg;
     state.rear_pa = rear_pa;
+    room?.update?.();
+  },
+});
+
+SCL?.renderClubBoothSection('clubBoothMount', {
+  state: {
+    deck_config: state.deck_config,
+    dj_riser_enabled: state.dj_riser_enabled,
+    bass_bin_placement: state.bass_bin_placement,
+    bass_bin_count: state.bass_bin_count,
+    spk_front_m: state.setup.spk_front_m,
+    booth_front_m: state.booth_front_m,
+    booth_offset_m: state.booth_offset_m,
+  },
+  onChange({ deck_config, dj_riser_enabled, bass_bin_placement, bass_bin_count, spk_front_m, booth_front_m, booth_offset_m }) {
+    state.deck_config = deck_config;
+    state.dj_riser_enabled = dj_riser_enabled;
+    state.bass_bin_placement = bass_bin_placement;
+    state.bass_bin_count = bass_bin_count;
+    state.setup.spk_front_m = spk_front_m;
+    state.booth_front_m = booth_front_m;
+    state.booth_offset_m = booth_offset_m;
     room?.update?.();
   },
 });
