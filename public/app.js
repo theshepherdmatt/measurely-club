@@ -250,3 +250,81 @@ if (btnToggleDisco) {
     room?.setDisco?.(_discoOn);
   });
 }
+
+// ── Mobile + tablet bottom tab bar (Floor / PA / Booth) ──────────────────
+// Ported from measurely-ecommerce's mobile pattern, simplified: club has
+// one #sidebar (not ecommerce's #configBar+#sidebar split), so this opens
+// the single sheet and scrolls it to the tapped section instead of
+// switching between two panels. Tapping the already-open tab collapses it.
+const mobileTabBar = document.getElementById('mobileTabBar');
+if (mobileTabBar) {
+  const mobileSidebar = document.getElementById('sidebar');
+
+  // Shrinks #roomViewport's real height to match the open sheet (CSS var,
+  // see the mobile media query) instead of the sheet floating over a
+  // static-size canvas — the engine's own ResizeObserver reacts to that
+  // and lifts the room's portrait framing to match. resize() is called
+  // explicitly too, belt-and-braces in case the observer misses the last
+  // tick of the transition (same pattern measurely-retail/ecommerce use).
+  function setRoomShift(open) {
+    document.documentElement.style.setProperty('--room-shift-h', open ? '55vh' : '0px');
+    room?.resize?.();
+  }
+
+  const mobileQuickBar = document.getElementById('quickAcousticsBar');
+  function setQuickBarVisible(visible) {
+    mobileQuickBar?.classList.toggle('qa-hidden', !visible);
+  }
+
+  function closeMobileSheet() {
+    mobileSidebar.classList.remove('mobile-sheet-open');
+    mobileTabBar.querySelectorAll('.mobile-tab-btn').forEach((b) => {
+      b.classList.remove('active');
+      b.setAttribute('aria-selected', 'false');
+    });
+    setRoomShift(false);
+    setQuickBarVisible(true);
+  }
+
+  mobileTabBar.querySelectorAll('.mobile-tab-btn').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const targetId = btn.getAttribute('data-mobile-tab');
+      const wasOpen = btn.classList.contains('active');
+      closeMobileSheet();
+      if (wasOpen) return; // second tap on the open tab just collapses it
+
+      btn.classList.add('active');
+      btn.setAttribute('aria-selected', 'true');
+      setRoomShift(true);
+      setQuickBarVisible(false);
+      mobileSidebar.classList.add('mobile-sheet-open');
+      document.getElementById(targetId)?.scrollIntoView({ block: 'start' });
+    });
+  });
+}
+
+// ── Mobile + tablet landscape edge drawer ─────────────────────────────────
+// Same #sidebar element and .mobile-sheet-open class as the portrait
+// bottom-tab-bar above — only the CSS differs per orientation (slide-up
+// sheet vs. edge drawer), so this reuses the identical toggle pattern.
+// A tap-away backdrop closes the drawer.
+const landscapeSidebarHandle = document.getElementById('landscapeSidebarHandle');
+const landscapeBackdrop = document.getElementById('landscapeDrawerBackdrop');
+if (landscapeSidebarHandle) {
+  const landscapeSidebar = document.getElementById('sidebar');
+
+  function closeLandscapeDrawer() {
+    landscapeSidebar.classList.remove('mobile-sheet-open');
+    landscapeBackdrop?.classList.remove('visible');
+  }
+
+  landscapeSidebarHandle.addEventListener('click', () => {
+    const wasOpen = landscapeSidebar.classList.contains('mobile-sheet-open');
+    closeLandscapeDrawer();
+    if (!wasOpen) {
+      landscapeSidebar.classList.add('mobile-sheet-open');
+      landscapeBackdrop?.classList.add('visible');
+    }
+  });
+  landscapeBackdrop?.addEventListener('click', closeLandscapeDrawer);
+}
