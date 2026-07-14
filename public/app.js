@@ -22,7 +22,10 @@ const state = {
     spk_front_m: 1.0,
     tweeter_height_m: 2.2,
     toe_in_deg: 0,
-    listener_front_m: 7.5,
+    // Measurement position is the dance floor centre, not a listening seat —
+    // set below from geometry.length_m so it re-centres whenever the room
+    // is resized, rather than a fixed distance from the front wall.
+    listener_front_m: 0,
     listener_offset_m: 0,
     subwoofer: false,
   },
@@ -33,6 +36,11 @@ const state = {
   density: 'comfortable',
   floor_material: 'hard',
 };
+
+function _centreListener() {
+  state.setup.listener_front_m = state.geometry.length_m / 2;
+}
+_centreListener();
 
 function getRoomData() {
   return {
@@ -100,6 +108,8 @@ SCL?.renderRoomSection('roomMount', {
     if (width_m !== prevW) room?.setRoomWidth?.(width_m);
     if (length_m !== prevL) room?.setRoomLength?.(length_m);
     if (height_m !== state.geometry.height_m) room?.setRoomHeight?.(height_m);
+    _centreListener();
+    room?.update?.();
     clubAPI?.setArea?.(floorAreaM2());
   },
 });
