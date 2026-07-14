@@ -3,9 +3,8 @@ import { initRoom3D, OVERLAY_META } from './engine/js/room3d.js?v=1';
 // Plain state object: the single source of truth for the room viewport.
 // getRoomData() below reads straight from this on every rebuild.
 // Placeholder venue only — the measurement position is the dance floor
-// centre, not a listening seat. Club-specific fields (capacity,
-// occupied-state absorption, power calc) are not wired up yet; see
-// README.md roadmap.
+// centre, not a listening seat. Club-specific fields (occupied-state
+// absorption, power calc) are not wired up yet; see README.md roadmap.
 const state = {
   room_type: 'club',
   geometry: {
@@ -30,6 +29,8 @@ const state = {
   // Bass bins: mono centre-stack under the booth, not spaced L/R pairs —
   // avoids power-alley cancellation across the floor.
   bass_bin_count: 2,
+  // Dance floor capacity density: 'comfortable' 2/m² | 'packed' 4/m².
+  density: 'comfortable',
   floor_material: 'hard',
 };
 
@@ -38,6 +39,7 @@ function getRoomData() {
     room_type: state.room_type,
     geometry: state.geometry,
     setup: state.setup,
+    bass_bin_count: state.bass_bin_count,
     environment: {
       floor_material: state.floor_material,
       furniture: { opt_area_rug: false, opt_sofa: false, opt_coffee_table: false, seating_type: 'none' },
@@ -46,7 +48,58 @@ function getRoomData() {
   };
 }
 
-const room = initRoom3D({ mountId: 'roomMount', getRoomData, mode: 'setup', showLabels: true });
+const room = initRoom3D({ mountId: 'roomViewport', getRoomData, mode: 'setup', showLabels: true });
 room?.frameRoom?.();
 room?.resize?.();
 window.addEventListener('resize', () => room?.resize?.());
+
+// ── Sidebar (SCL) ─────────────────────────────────────────────────────────
+const SCL = window.MeasurelySCL;
+
+function floorAreaM2() {
+  return state.geometry.width_m * state.geometry.length_m;
+}
+
+const clubAPI = SCL?.renderClubSection('clubMount', {
+  state: {
+    density: state.density,
+    bass_bin_count: state.bass_bin_count,
+    area_m2: floorAreaM2(),
+  },
+  onChange({ density, bass_bin_count }) {
+    state.density = density;
+    state.bass_bin_count = bass_bin_count;
+    room?.update?.();
+  },
+});
+
+SCL?.renderClubSpeakersSection('clubSpeakersMount', {
+  state: {
+    spk_spacing_m: state.setup.spk_spacing_m,
+    spk_front_m: state.setup.spk_front_m,
+  },
+  onChange({ spk_spacing_m, spk_front_m }) {
+    state.setup.spk_spacing_m = spk_spacing_m;
+    state.setup.spk_front_m = spk_front_m;
+    room?.update?.();
+  },
+});
+
+SCL?.renderRoomSection('roomMount', {
+  state: {
+    width_m: state.geometry.width_m,
+    length_m: state.geometry.length_m,
+    height_m: state.geometry.height_m,
+  },
+  onChange({ width_m, length_m, height_m }) {
+    const prevW = state.geometry.width_m;
+    const prevL = state.geometry.length_m;
+    state.geometry.width_m = width_m;
+    state.geometry.length_m = length_m;
+    state.geometry.height_m = height_m;
+    if (width_m !== prevW) room?.setRoomWidth?.(width_m);
+    if (length_m !== prevL) room?.setRoomLength?.(length_m);
+    if (height_m !== state.geometry.height_m) room?.setRoomHeight?.(height_m);
+    clubAPI?.setArea?.(floorAreaM2());
+  },
+});
