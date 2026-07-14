@@ -1,4 +1,4 @@
-import { initRoom3D, OVERLAY_META } from './engine/js/room3d.js?v=27';
+import { initRoom3D, OVERLAY_META } from './engine/js/room3d.js?v=28';
 
 // Plain state object: the single source of truth for the room viewport.
 // getRoomData() below reads straight from this on every rebuild.
@@ -21,7 +21,9 @@ const state = {
     spk_spacing_m: 6,
     spk_front_m: 1.0,
     tweeter_height_m: 2.2,
-    toe_in_deg: 0,
+    // Modest toe-in for coverage evenness across a wide floor — not a
+    // hi-fi stereo triangle angle.
+    toe_in_deg: 10,
     // Measurement position is the dance floor centre, not a listening seat —
     // set below from geometry.length_m so it re-centres whenever the room
     // is resized, rather than a fixed distance from the front wall.
@@ -96,14 +98,16 @@ SCL?.renderClubSpeakersSection('clubSpeakersMount', {
     spk_front_m: state.setup.spk_front_m,
     booth_front_m: state.booth_front_m,
     pa_mount_height_m: state.pa_mount_height_m,
+    toe_in_deg: state.setup.toe_in_deg,
     rear_pa: state.rear_pa,
   },
-  onChange({ bass_bin_count, spk_spacing_m, spk_front_m, booth_front_m, pa_mount_height_m, rear_pa }) {
+  onChange({ bass_bin_count, spk_spacing_m, spk_front_m, booth_front_m, pa_mount_height_m, toe_in_deg, rear_pa }) {
     state.bass_bin_count = bass_bin_count;
     state.setup.spk_spacing_m = spk_spacing_m;
     state.setup.spk_front_m = spk_front_m;
     state.booth_front_m = booth_front_m;
     state.pa_mount_height_m = pa_mount_height_m;
+    state.setup.toe_in_deg = toe_in_deg;
     state.rear_pa = rear_pa;
     room?.update?.();
   },
