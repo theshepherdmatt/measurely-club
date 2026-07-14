@@ -1,4 +1,4 @@
-import { initRoom3D, OVERLAY_META } from './engine/js/room3d.js?v=54';
+import { initRoom3D, OVERLAY_META } from './engine/js/room3d.js?v=55';
 
 // Plain state object: the single source of truth for the room viewport.
 // getRoomData() below reads straight from this on every rebuild.
@@ -207,6 +207,47 @@ qaBtns.forEach(btn => {
     } else {
       room?.focusIssue?.(overlay);
     }
+  });
+});
+
+// ── Camera view presets ───────────────────────────────────────────────────
+// Positions in room metres (engine's centred space: y=0 mid-height, floor
+// at -height/2), computed live from state so views track venue resizes
+// and booth moves. Overview uses frameRoom() (the fitted default).
+const camBtns = document.querySelectorAll('#cameraViews .seg-btn');
+function clubCameraView(key) {
+  const { width_m: W, length_m: L, height_m: H } = state.geometry;
+  const floorY = -H / 2;
+  // Same 0.42 booth footprint scale as maxBoothFrontFor() above.
+  const boothZ = -L / 2 + state.booth_front_m * BOOTH_FOOTPRINT_SCALE;
+  const boothX = state.booth_offset_m;
+  switch (key) {
+    case 'dj': // standing at the decks, looking out over the floor
+      return {
+        pos:  { x: boothX, y: floorY + 2.05, z: boothZ - 0.5 },
+        look: { x: 0, y: floorY + 1.3, z: L * 0.3 },
+      };
+    case 'floor': // head-height in the crowd, facing the booth
+      return {
+        pos:  { x: 0.4, y: floorY + 1.65, z: L * 0.18 },
+        look: { x: boothX, y: floorY + 1.4, z: boothZ },
+      };
+    case 'top': // plan view straight down
+      return {
+        pos:  { x: 0, y: H / 2 + Math.max(W, L) * 0.85, z: 0.01 },
+        look: { x: 0, y: 0, z: 0 },
+      };
+  }
+  return null;
+}
+camBtns.forEach(btn => {
+  btn.addEventListener('click', (e) => {
+    camBtns.forEach(b => b.classList.remove('active'));
+    e.currentTarget.classList.add('active');
+    const key = e.currentTarget.dataset.view;
+    if (key === 'overview') { room?.frameRoom?.(); return; }
+    const v = clubCameraView(key);
+    if (v) room?.flyToRoomPos?.(v);
   });
 });
 
