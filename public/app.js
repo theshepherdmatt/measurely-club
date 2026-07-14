@@ -335,16 +335,17 @@ if (landscapeSidebarHandle || landscapeOverlaysHandle) {
   const landscapeSidebar = document.getElementById('sidebar');
   const landscapeOverlaysBar = document.getElementById('quickAcousticsBar');
 
-  // Room shifts its LEFT edge for the left (Overlays) drawer and its
-  // RIGHT edge for the right (Menu) drawer -- narrowing from a fixed
-  // left:0 anchor only ever vacated space on the right regardless of
-  // which side opened, leaving the room glued under the left drawer
-  // with an empty gap on the opposite side. --room-shift-left/-right
-  // (see the landscape media query) default to 0.
+  // Room slides via CSS transform (translateX), not a width/left/right
+  // resize -- resizing the element changes container clientWidth, which
+  // room3d.js's ResizeObserver feeds into camera.aspect and its
+  // landscape zoom framing, so the room visibly "grew" as it slid.
+  // transform doesn't touch layout size, so no resize() call is needed
+  // (or wanted) here -- the canvas dimensions never change, only its
+  // on-screen position. Left drawer covers the room's left edge, so the
+  // room shifts right (+X) to clear it; right drawer shifts it left (-X).
   function setLandscapeRoomShift(side) { // 'left' | 'right' | null
-    document.documentElement.style.setProperty('--room-shift-left', side === 'left' ? 'min(60vw, 260px)' : '0px');
-    document.documentElement.style.setProperty('--room-shift-right', side === 'right' ? 'min(60vw, 300px)' : '0px');
-    room?.resize?.();
+    const x = side === 'left' ? 'min(60vw, 260px)' : side === 'right' ? 'max(-60vw, -300px)' : '0px';
+    document.documentElement.style.setProperty('--room-shift-x', x);
   }
 
   function closeLandscapeDrawers() {

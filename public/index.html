@@ -294,25 +294,32 @@
   @media (max-width: 1180px) and (orientation: landscape) {
     html, body { height: 100%; overflow: hidden; }
     #mainColumn { height: 100%; }
-    /* Room shifts its LEFT edge over for the left (Overlays) drawer and
-       its RIGHT edge for the right (Menu) drawer -- a single width-only
-       shrink anchored at left:0 only ever vacated space on the right,
-       so opening the left drawer left the room glued underneath it while
-       an empty gap of exposed page-black opened on the opposite side.
-       --room-shift-left/-right (set by app.js) default to 0; only one is
-       ever non-zero since the drawers are mutually exclusive.
-       !important required: this element carries an inline
-       style="position:absolute;inset:0" (sets left/right/top/bottom
-       directly), which beats an external stylesheet rule for those same
-       longhands in the cascade regardless of selector specificity --
-       without !important these rules were simply never applied at all,
-       not "de-prioritized". Same issue ecommerce's own CSS flags for its
-       inline-styled elements (#quickAcousticsBar etc). */
+    /* Room slides over via CSS transform, not left/right resizing.
+       Shrinking the box's actual width/left/right changes container
+       clientWidth, which room3d.js's ResizeObserver picks up and feeds
+       into camera.aspect + its landscape-phone setViewOffset zoom --
+       the room visibly "enlarged" as it slid because the canvas was
+       genuinely being resized underneath it, not just repositioned.
+       transform: translateX never touches layout box size, so the
+       ResizeObserver never fires and the camera framing holds exactly
+       steady while the element visually slides. #mainColumn clips the
+       overflow so the room doesn't spill past the viewport edge.
+       --room-shift-x (set by app.js) is negative to reveal the left
+       (Overlays) drawer, positive for the right (Menu) drawer, 0px
+       closed. !important required: this element carries an inline
+       style="position:absolute;inset:0", which beats an external
+       stylesheet rule for the same longhands in the cascade regardless
+       of selector specificity -- without !important these rules were
+       simply never applied at all, not "de-prioritized". Same issue
+       ecommerce's own CSS flags for its inline-styled elements
+       (#quickAcousticsBar etc). */
+    #mainColumn { overflow: hidden; }
     #roomViewport {
       height: 100% !important;
-      left: var(--room-shift-left, 0px) !important;
-      right: var(--room-shift-right, 0px) !important;
-      transition: left 0.25s ease, right 0.25s ease;
+      left: 0 !important;
+      right: 0 !important;
+      transform: translateX(var(--room-shift-x, 0px));
+      transition: transform 0.25s ease;
     }
 
     /* #quickAcousticsBar is normally a floating horizontal pill (bottom-
@@ -497,6 +504,6 @@
 <button type="button" class="landscape-edge-handle landscape-edge-handle-left" id="landscapeOverlaysHandle" aria-label="Acoustic overlays">Overlays</button>
 <button type="button" class="landscape-edge-handle landscape-edge-handle-right" id="landscapeSidebarHandle" aria-label="Room settings">Menu</button>
 
-<script type="module" src="./app.js?v=17"></script>
+<script type="module" src="./app.js?v=18"></script>
 </body>
 </html>
