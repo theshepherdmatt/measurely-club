@@ -1,4 +1,4 @@
-import { initRoom3D, OVERLAY_META } from './engine/js/room3d.js?v=5';
+import { initRoom3D, OVERLAY_META } from './engine/js/room3d.js?v=6';
 
 // Plain state object: the single source of truth for the room viewport.
 // getRoomData() below reads straight from this on every rebuild.
@@ -34,6 +34,9 @@ const state = {
   bass_bin_count: 2,
   // DJ booth distance from the front wall (cable-run clearance).
   booth_front_m: 0.75,
+  // pa_top wall-bracket mount height + downward tilt (permanent install).
+  pa_mount_height_m: 3.0,
+  pa_tilt_deg: 15,
   // Dance floor capacity density: 'comfortable' 2/m² | 'packed' 4/m².
   density: 'comfortable',
   floor_material: 'hard',
@@ -51,6 +54,8 @@ function getRoomData() {
     setup: state.setup,
     bass_bin_count: state.bass_bin_count,
     booth_front_m: state.booth_front_m,
+    pa_mount_height_m: state.pa_mount_height_m,
+    pa_tilt_deg: state.pa_tilt_deg,
     environment: {
       floor_material: state.floor_material,
       furniture: { opt_area_rug: false, opt_sofa: false, opt_coffee_table: false, seating_type: 'none' },
@@ -89,11 +94,15 @@ SCL?.renderClubSpeakersSection('clubSpeakersMount', {
     spk_spacing_m: state.setup.spk_spacing_m,
     spk_front_m: state.setup.spk_front_m,
     booth_front_m: state.booth_front_m,
+    pa_mount_height_m: state.pa_mount_height_m,
+    pa_tilt_deg: state.pa_tilt_deg,
   },
-  onChange({ spk_spacing_m, spk_front_m, booth_front_m }) {
+  onChange({ spk_spacing_m, spk_front_m, booth_front_m, pa_mount_height_m, pa_tilt_deg }) {
     state.setup.spk_spacing_m = spk_spacing_m;
     state.setup.spk_front_m = spk_front_m;
     state.booth_front_m = booth_front_m;
+    state.pa_mount_height_m = pa_mount_height_m;
+    state.pa_tilt_deg = pa_tilt_deg;
     room?.update?.();
   },
 });
