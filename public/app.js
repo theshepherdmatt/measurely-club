@@ -127,13 +127,31 @@ SCL?.renderClubSpeakersSection('clubSpeakersMount', {
   },
 });
 
-SCL?.renderClubBoothSection('clubBoothMount', {
+// booth_front_m is multiplied by the booth's own internal footprint
+// scale (BOOTH_FOOTPRINT_SCALE = 0.42 in room3d.js -- not exposed, so
+// duplicated here) before it becomes a real-world Z offset, so the
+// slider's raw number reaches roughly 2.4x further in real metres than
+// it looks. The limit isn't room centre -- it's however far back the
+// booth can slide before the RISER PLATFORM's own back edge (it's
+// wider/deeper than the desk itself, see _buildDJBooth()'s riser
+// depth of 3.6 authored units) reaches the back wall, minus a small
+// clearance margin.
+const BOOTH_FOOTPRINT_SCALE = 0.42;
+const RISER_DEPTH_AUTHORED = 3.6; // must match _buildDJBooth()'s riser depth
+const BOOTH_BACK_WALL_MARGIN_M = 0.3;
+function maxBoothFrontFor(lengthM) {
+  const riserHalfDepthM = (RISER_DEPTH_AUTHORED / 2) * BOOTH_FOOTPRINT_SCALE;
+  return Math.max(2.5, (lengthM - riserHalfDepthM - BOOTH_BACK_WALL_MARGIN_M) / BOOTH_FOOTPRINT_SCALE);
+}
+
+const boothAPI = SCL?.renderClubBoothSection('clubBoothMount', {
   state: {
     deck_config: state.deck_config,
     dj_riser_enabled: state.dj_riser_enabled,
     booth_front_m: state.booth_front_m,
     booth_offset_m: state.booth_offset_m,
   },
+  maxBoothFront: maxBoothFrontFor(state.geometry.length_m),
   onChange({ deck_config, dj_riser_enabled, booth_front_m, booth_offset_m }) {
     state.deck_config = deck_config;
     state.dj_riser_enabled = dj_riser_enabled;
@@ -168,6 +186,7 @@ SCL?.renderRoomSection('roomMount', {
     _centreListener();
     room?.update?.();
     clubAPI?.setArea?.(floorAreaM2());
+    boothAPI?.setMaxBoothFront?.(maxBoothFrontFor(length_m));
   },
 });
 
@@ -303,28 +322,46 @@ if (mobileTabBar) {
   });
 }
 
-// ── Mobile + tablet landscape edge drawer ─────────────────────────────────
-// Same #sidebar element and .mobile-sheet-open class as the portrait
-// bottom-tab-bar above — only the CSS differs per orientation (slide-up
-// sheet vs. edge drawer), so this reuses the identical toggle pattern.
-// A tap-away backdrop closes the drawer.
+// ── Mobile + tablet landscape edge drawers ────────────────────────────────
+// Dual handles matching ecommerce's Wall(left)+Room(right) pattern:
+// Overlays (#quickAcousticsBar) from the left, Menu (#sidebar) from the
+// right. Same .mobile-sheet-open toggle pattern as the portrait bottom
+// tab bar — only the CSS differs per orientation. No backdrop -- the 3D
+// room (OrbitControls) stays interactive while a drawer is open;
+// closing is via the handles (tap the open one again, or the other one).
 const landscapeSidebarHandle = document.getElementById('landscapeSidebarHandle');
-const landscapeBackdrop = document.getElementById('landscapeDrawerBackdrop');
-if (landscapeSidebarHandle) {
+const landscapeOverlaysHandle = document.getElementById('landscapeOverlaysHandle');
+if (landscapeSidebarHandle || landscapeOverlaysHandle) {
   const landscapeSidebar = document.getElementById('sidebar');
+  const landscapeOverlaysBar = document.getElementById('quickAcousticsBar');
 
-  function closeLandscapeDrawer() {
-    landscapeSidebar.classList.remove('mobile-sheet-open');
-    landscapeBackdrop?.classList.remove('visible');
+  // Room shifts its LEFT edge for the left (Overlays) drawer and its
+  // RIGHT edge for the right (Menu) drawer -- narrowing from a fixed
+  // left:0 anchor only ever vacated space on the right regardless of
+  // which side opened, leaving the room glued under the left drawer
+  // with an empty gap on the opposite side. --room-shift-left/-right
+  // (see the landscape media query) default to 0.
+  function setLandscapeRoomShift(side) { // 'left' | 'right' | null
+    document.documentElement.style.setProperty('--room-shift-left', side === 'left' ? 'min(60vw, 260px)' : '0px');
+    document.documentElement.style.setProperty('--room-shift-right', side === 'right' ? 'min(60vw, 300px)' : '0px');
+    room?.resize?.();
   }
 
-  landscapeSidebarHandle.addEventListener('click', () => {
-    const wasOpen = landscapeSidebar.classList.contains('mobile-sheet-open');
-    closeLandscapeDrawer();
+  function closeLandscapeDrawers() {
+    landscapeSidebar.classList.remove('mobile-sheet-open');
+    landscapeOverlaysBar?.classList.remove('mobile-sheet-open');
+    setLandscapeRoomShift(null);
+  }
+
+  function toggleLandscapeDrawer(el, side) {
+    const wasOpen = el.classList.contains('mobile-sheet-open');
+    closeLandscapeDrawers();
     if (!wasOpen) {
-      landscapeSidebar.classList.add('mobile-sheet-open');
-      landscapeBackdrop?.classList.add('visible');
+      el.classList.add('mobile-sheet-open');
+      setLandscapeRoomShift(side);
     }
-  });
-  landscapeBackdrop?.addEventListener('click', closeLandscapeDrawer);
+  }
+
+  landscapeSidebarHandle?.addEventListener('click', () => toggleLandscapeDrawer(landscapeSidebar, 'right'));
+  landscapeOverlaysHandle?.addEventListener('click', () => toggleLandscapeDrawer(landscapeOverlaysBar, 'left'));
 }

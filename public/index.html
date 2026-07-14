@@ -278,23 +278,63 @@
   }
 
   /* Landscape-only elements — hidden outside the landscape media query. */
-  .landscape-edge-handle,
-  .landscape-drawer-backdrop {
+  .landscape-edge-handle {
     display: none;
   }
 
   /* ══════════════════════════════════════════════════════════════════
      MOBILE + TABLET LANDSCAPE (<=1180px, landscape)
      A bottom tab bar eats too much of an already-short landscape
-     viewport — a single edge drawer instead (club has one sidebar to
-     reveal, not ecommerce's Wall+Room split, so one handle not two).
+     viewport — edge drawers instead, matching ecommerce's dual-handle
+     pattern: acoustics/overlay controls (Reflections/Bass Modes/Peaks &
+     Dips/Crowd/Disco, normally the floating #quickAcousticsBar) slide in
+     from the LEFT, #sidebar (room/PA/booth settings) from the RIGHT.
      1180 (not ecommerce's 900) to also catch tablet landscape widths.
      ══════════════════════════════════════════════════════════════════ */
   @media (max-width: 1180px) and (orientation: landscape) {
     html, body { height: 100%; overflow: hidden; }
     #mainColumn { height: 100%; }
-    #roomViewport { height: 100%; }
-    #quickAcousticsBar { display: none !important; }
+    /* Room shifts its LEFT edge over for the left (Overlays) drawer and
+       its RIGHT edge for the right (Menu) drawer -- a single width-only
+       shrink anchored at left:0 only ever vacated space on the right,
+       so opening the left drawer left the room glued underneath it while
+       an empty gap of exposed page-black opened on the opposite side.
+       --room-shift-left/-right (set by app.js) default to 0; only one is
+       ever non-zero since the drawers are mutually exclusive. Overrides
+       the inline inset:0 on this element's own left/right specifically
+       (over-constrained left+right+implicit width resolves in the
+       property's favour, same reasoning as portrait's height override). */
+    #roomViewport {
+      height: 100%;
+      left: var(--room-shift-left, 0px);
+      right: var(--room-shift-right, 0px);
+      transition: left 0.25s ease, right 0.25s ease;
+    }
+
+    /* #quickAcousticsBar is normally a floating horizontal pill (bottom-
+       centre) — repurposed here as a vertical left-edge drawer, same
+       .mobile-sheet-open toggle pattern as #sidebar. */
+    #quickAcousticsBar {
+      position: fixed !important;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      width: min(60vw, 260px);
+      height: 100%;
+      max-width: none;
+      flex-direction: column;
+      align-items: stretch;
+      padding: 16px 8px;
+      gap: 6px;
+      overflow-y: auto;
+      transform: translateX(-100%);
+      transition: transform 0.25s ease;
+      box-shadow: 8px 0 24px rgba(0, 0, 0, 0.35);
+      z-index: 40;
+    }
+    #quickAcousticsBar.mobile-sheet-open { transform: translateX(0) !important; }
+    #quickAcousticsBar .segmented { flex-direction: column; }
+    #quickAcousticsBar .qa-waves-toggle[style*="width: 1px"] { width: auto !important; height: 1px; }
 
     #sidebar {
       position: fixed;
@@ -302,7 +342,7 @@
       right: 0;
       left: auto;
       bottom: 0;
-      width: min(80vw, 340px);
+      width: min(60vw, 300px);
       height: 100%;
       max-height: none;
       overflow-y: auto;
@@ -334,16 +374,20 @@
       cursor: pointer;
       z-index: 45;
     }
+    .landscape-edge-handle-left { left: 0; }
     .landscape-edge-handle-right { right: 0; }
 
-    .landscape-drawer-backdrop {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0, 0, 0, 0.4);
-      z-index: 35;
-    }
-    .landscape-drawer-backdrop.visible { display: block; }
+    /* Sidebar controls are sized for the 320px desktop panel -- crammed
+       into a ~300px (or less on small phones) landscape drawer with the
+       coarse-pointer slider-thumb bump active too, they read as
+       oversized/cramped. Scoped down here only. */
+    #sidebar { padding: 16px 12px; }
+    #sidebar .club-group-label { font-size: 9px; margin-bottom: 8px; }
+    #sidebar .demo-field-label { font-size: 0.72rem; }
+    #sidebar .demo-field-value { font-size: 0.85rem; }
+    #sidebar .sbox-btn { padding: 5px 8px; font-size: 0.72rem; }
+    #sidebar .measurely-slider::-webkit-slider-thumb { width: 14px; height: 22px; }
+    #sidebar .measurely-slider::-moz-range-thumb { width: 14px; height: 22px; }
   }
 </style>
 
@@ -438,12 +482,16 @@
   </button>
 </nav>
 
-<!-- ── Mobile LANDSCAPE only: edge drawer handle + backdrop ──
-     Single handle (club has one sidebar, not ecommerce's Wall+Room
-     split) — see the max-width:900px + orientation:landscape block
-     above and the wiring in app.js. Hidden outside that media query. -->
+<!-- ── Mobile LANDSCAPE only: edge drawer handles ──
+     Dual handles matching ecommerce's Wall(left)+Room(right) pattern:
+     Overlays (Reflections/Bass Modes/Peaks & Dips/Crowd/Disco, normally
+     the floating #quickAcousticsBar) from the left, Menu (#sidebar) from
+     the right — see the landscape media query above and the wiring in
+     app.js. No backdrop -- the 3D room (OrbitControls) stays interactive
+     while a drawer is open; closing is via the handles. Hidden outside
+     that media query. -->
+<button type="button" class="landscape-edge-handle landscape-edge-handle-left" id="landscapeOverlaysHandle" aria-label="Acoustic overlays">Overlays</button>
 <button type="button" class="landscape-edge-handle landscape-edge-handle-right" id="landscapeSidebarHandle" aria-label="Room settings">Menu</button>
-<div class="landscape-drawer-backdrop" id="landscapeDrawerBackdrop"></div>
 
 <script type="module" src="./app.js?v=15"></script>
 </body>
