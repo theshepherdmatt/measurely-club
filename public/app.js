@@ -1,4 +1,4 @@
-import { initRoom3D, OVERLAY_META } from './engine/js/room3d.js?v=32';
+import { initRoom3D, OVERLAY_META } from './engine/js/room3d.js?v=33';
 
 // Plain state object: the single source of truth for the room viewport.
 // getRoomData() below reads straight from this on every rebuild.
@@ -38,6 +38,10 @@ const state = {
   bass_bin_placement: 'centre',
   // DJ booth distance from the front wall (cable-run clearance).
   booth_front_m: 2.0,
+  // Booth left/right offset from room centre — moves the booth and (in
+  // 'centre' bass_bin_placement) the bins underneath it. The wall-mounted
+  // pa_top rig stays fixed regardless.
+  booth_offset_m: 0,
   // pa_top wall-bracket mount height (permanent install). Tilt is derived
   // automatically in the engine — aimed at ear height on the dance floor.
   pa_mount_height_m: 3.0,
@@ -60,6 +64,7 @@ function getRoomData() {
     bass_bin_count: state.bass_bin_count,
     bass_bin_placement: state.bass_bin_placement,
     booth_front_m: state.booth_front_m,
+    booth_offset_m: state.booth_offset_m,
     pa_mount_height_m: state.pa_mount_height_m,
     crowd_limit: state.crowd_limit,
     rear_pa: state.rear_pa,
@@ -101,16 +106,18 @@ SCL?.renderClubSpeakersSection('clubSpeakersMount', {
     spk_spacing_m: state.setup.spk_spacing_m,
     spk_front_m: state.setup.spk_front_m,
     booth_front_m: state.booth_front_m,
+    booth_offset_m: state.booth_offset_m,
     pa_mount_height_m: state.pa_mount_height_m,
     toe_in_deg: state.setup.toe_in_deg,
     rear_pa: state.rear_pa,
   },
-  onChange({ bass_bin_count, bass_bin_placement, spk_spacing_m, spk_front_m, booth_front_m, pa_mount_height_m, toe_in_deg, rear_pa }) {
+  onChange({ bass_bin_count, bass_bin_placement, spk_spacing_m, spk_front_m, booth_front_m, booth_offset_m, pa_mount_height_m, toe_in_deg, rear_pa }) {
     state.bass_bin_count = bass_bin_count;
     state.bass_bin_placement = bass_bin_placement;
     state.setup.spk_spacing_m = spk_spacing_m;
     state.setup.spk_front_m = spk_front_m;
     state.booth_front_m = booth_front_m;
+    state.booth_offset_m = booth_offset_m;
     state.pa_mount_height_m = pa_mount_height_m;
     state.setup.toe_in_deg = toe_in_deg;
     state.rear_pa = rear_pa;
