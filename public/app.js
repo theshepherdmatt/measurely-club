@@ -1,4 +1,4 @@
-import { initRoom3D, OVERLAY_META } from './engine/js/room3d.js?v=11';
+import { initRoom3D, OVERLAY_META } from './engine/js/room3d.js?v=12';
 
 // Plain state object: the single source of truth for the room viewport.
 // getRoomData() below reads straight from this on every rebuild.
@@ -8,7 +8,7 @@ import { initRoom3D, OVERLAY_META } from './engine/js/room3d.js?v=11';
 const state = {
   room_type: 'club',
   geometry: {
-    length_m: 15,
+    length_m: 10,
     width_m: 10,
     height_m: 4.5,
     ceiling_type: 'flat',
