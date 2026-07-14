@@ -1,11 +1,11 @@
-<svg width="362" height="112" viewBox="0 0 362 112" xmlns="http://www.w3.org/2000/svg">
-  <g transform="translate(14,20)">
-    <circle cx="36" cy="36" r="6" fill="#3A9D93"></circle>
-    <path d="M50 24c8 6.5 8 17.5 0 24" stroke="#1A1A1A" stroke-width="4" stroke-linecap="round" fill="none"></path>
-    <path d="M60 14c14.5 12 14.5 32 0 44" stroke="#1A1A1A" stroke-width="4" stroke-linecap="round" fill="none" opacity="0.55"></path>
-    <path d="M22 24c-8 6.5-8 17.5 0 24" stroke="#1A1A1A" stroke-width="4" stroke-linecap="round" fill="none"></path>
-    <path d="M12 14C-2.5 26-2.5 46 12 58" stroke="#1A1A1A" stroke-width="4" stroke-linecap="round" fill="none" opacity="0.55"></path>
+<svg width="320" height="96" viewBox="0 0 320 96" xmlns="http://www.w3.org/2000/svg">
+  <g transform="translate(10,16)">
+    <circle cx="32" cy="32" r="6" fill="#3A9D93"></circle>
+    <path d="M46 20c8 6.5 8 17.5 0 24" stroke="#FAFAFA" stroke-width="4" stroke-linecap="round" fill="none"></path>
+    <path d="M56 10c14.5 12 14.5 32 0 44" stroke="#FAFAFA" stroke-width="4" stroke-linecap="round" fill="none" opacity="0.5"></path>
+    <path d="M18 20c-8 6.5-8 17.5 0 24" stroke="#FAFAFA" stroke-width="4" stroke-linecap="round" fill="none"></path>
+    <path d="M8 10C-6.5 22-6.5 42 8 54" stroke="#FAFAFA" stroke-width="4" stroke-linecap="round" fill="none" opacity="0.5"></path>
   </g>
-  <text x="110" y="50" font-family="DM Sans, Arial, sans-serif" font-weight="700" font-size="38" letter-spacing="-0.5" fill="#1A1A1A">Lisle Acoustics</text>
-  <text x="111" y="68" font-family="DM Sans, Arial, sans-serif" font-weight="500" font-size="14" letter-spacing="2.5" fill="#3A9D93">PA SYSTEMS · LONDON</text>
+  <text x="96" y="42" font-family="DM Sans, Arial, sans-serif" font-weight="700" font-size="26" letter-spacing="-0.3" fill="#FAFAFA">Lisle Acoustics</text>
+  <text x="97" y="60" font-family="DM Sans, Arial, sans-serif" font-weight="600" font-size="10.5" letter-spacing="2.2" fill="#3A9D93">PA SYSTEMS · LONDON</text>
 </svg>
