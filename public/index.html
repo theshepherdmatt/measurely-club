@@ -65,6 +65,12 @@
     border-color: #1a1a1a;
   }
 
+  /* Tops/Bass wave toggles colour-code to match the wave-ring legend
+     (teal = mid/high, pink = low/sub) instead of the generic black
+     active-fill, so the button state reads at a glance. */
+  #btnToggleTopWaves.active { background: var(--brand-accent, #3A9D93); border-color: var(--brand-accent, #3A9D93); }
+  #btnToggleSubWaves.active { background: #ff2d78; border-color: #ff2d78; }
+
   /* Floating UI from ecommerce */
   .segmented {
     display: flex;
@@ -218,7 +224,6 @@
         <button type="button" class="seg-btn" data-overlay="peaks_dips" style="padding: 6px 16px; white-space: nowrap;">Peaks & Dips</button>
       </div>
       <div class="qa-waves-toggle" style="width: 1px; background: var(--viewport-border); margin: 2px 0;"></div>
-      <button type="button" class="seg-btn qa-waves-toggle" id="btnToggleWaves" style="padding: 6px 16px; white-space: nowrap; border-radius: 0;">Waves</button>
       <button type="button" class="seg-btn active qa-waves-toggle" id="btnToggleCrowd" style="padding: 6px 16px; white-space: nowrap; border-radius: 0;">Crowd</button>
       <button type="button" class="seg-btn qa-waves-toggle" id="btnToggleDisco" style="padding: 6px 16px; white-space: nowrap; border-radius: 0;">Disco</button>
     </div>
@@ -232,6 +237,13 @@
     <div class="club-section">
       <div class="club-group-label">PA rig</div>
       <div id="clubSpeakersMount"></div>
+      <div style="margin-top: 16px;">
+        <div class="club-group-label" style="margin-bottom: 8px;">Sound Waves</div>
+        <div style="display: flex; gap: 8px;">
+          <button type="button" class="sbox-btn" id="btnToggleTopWaves" style="flex: 1;">Tops</button>
+          <button type="button" class="sbox-btn" id="btnToggleSubWaves" style="flex: 1;">Bass</button>
+        </div>
+      </div>
     </div>
     <div class="club-section">
       <div class="club-group-label">DJ booth</div>

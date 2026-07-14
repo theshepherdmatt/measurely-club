@@ -1,4 +1,4 @@
-import { initRoom3D, OVERLAY_META } from './engine/js/room3d.js?v=43';
+import { initRoom3D, OVERLAY_META } from './engine/js/room3d.js?v=44';
 
 // Plain state object: the single source of truth for the room viewport.
 // getRoomData() below reads straight from this on every rebuild.
@@ -186,25 +186,36 @@ qaBtns.forEach(btn => {
   });
 });
 
-let _wavesOn = false; // start inactive
-const btnToggleWaves = document.getElementById('btnToggleWaves');
+// Split Tops (blue, L/R rings) vs Bass (pink, SUB rings) — was a single
+// combined Waves toggle in the floating central control bar; moved into
+// the sidebar as two independent buttons per setTopWaves/setSubWaves.
+let _topWavesOn = false;
+let _subWavesOn = false;
+const btnToggleTopWaves = document.getElementById('btnToggleTopWaves');
+const btnToggleSubWaves = document.getElementById('btnToggleSubWaves');
 const waveKey = document.getElementById('waveKey');
-if (btnToggleWaves) {
-  // Trigger initial state — waveKey has display:flex hardcoded in the HTML
-  // (always visible on load) with no matching initial sync here, so it
-  // showed on startup even though _wavesOn starts false.
-  room?.setWaves?.(false);
-  if (waveKey) waveKey.style.display = 'none';
-  btnToggleWaves.addEventListener('click', (e) => {
-    _wavesOn = !_wavesOn;
-    if (_wavesOn) {
-      e.currentTarget.classList.add('active');
-      if (waveKey) waveKey.style.display = 'flex';
-    } else {
-      e.currentTarget.classList.remove('active');
-      if (waveKey) waveKey.style.display = 'none';
-    }
-    room?.setWaves?.(_wavesOn);
+room?.setTopWaves?.(false);
+room?.setSubWaves?.(false);
+if (waveKey) waveKey.style.display = 'none';
+
+function _syncWaveKey() {
+  if (waveKey) waveKey.style.display = (_topWavesOn || _subWavesOn) ? 'flex' : 'none';
+}
+
+if (btnToggleTopWaves) {
+  btnToggleTopWaves.addEventListener('click', (e) => {
+    _topWavesOn = !_topWavesOn;
+    e.currentTarget.classList.toggle('active', _topWavesOn);
+    room?.setTopWaves?.(_topWavesOn);
+    _syncWaveKey();
+  });
+}
+if (btnToggleSubWaves) {
+  btnToggleSubWaves.addEventListener('click', (e) => {
+    _subWavesOn = !_subWavesOn;
+    e.currentTarget.classList.toggle('active', _subWavesOn);
+    room?.setSubWaves?.(_subWavesOn);
+    _syncWaveKey();
   });
 }
 
