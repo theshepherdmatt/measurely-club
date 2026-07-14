@@ -1,4 +1,4 @@
-import { initRoom3D, OVERLAY_META } from './engine/js/room3d.js?v=36';
+import { initRoom3D, OVERLAY_META } from './engine/js/room3d.js?v=37';
 
 // Plain state object: the single source of truth for the room viewport.
 // getRoomData() below reads straight from this on every rebuild.
@@ -172,8 +172,11 @@ let _wavesOn = false; // start inactive
 const btnToggleWaves = document.getElementById('btnToggleWaves');
 const waveKey = document.getElementById('waveKey');
 if (btnToggleWaves) {
-  // Trigger initial state
+  // Trigger initial state — waveKey has display:flex hardcoded in the HTML
+  // (always visible on load) with no matching initial sync here, so it
+  // showed on startup even though _wavesOn starts false.
   room?.setWaves?.(false);
+  if (waveKey) waveKey.style.display = 'none';
   btnToggleWaves.addEventListener('click', (e) => {
     _wavesOn = !_wavesOn;
     if (_wavesOn) {
