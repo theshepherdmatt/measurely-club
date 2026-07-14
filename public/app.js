@@ -1,4 +1,4 @@
-import { initRoom3D, OVERLAY_META } from './engine/js/room3d.js?v=8';
+import { initRoom3D, OVERLAY_META } from './engine/js/room3d.js?v=9';
 
 // Plain state object: the single source of truth for the room viewport.
 // getRoomData() below reads straight from this on every rebuild.
@@ -119,12 +119,13 @@ SCL?.renderRoomSection('roomMount', {
   onChange({ width_m, length_m, height_m }) {
     const prevW = state.geometry.width_m;
     const prevL = state.geometry.length_m;
+    const prevH = state.geometry.height_m;
     state.geometry.width_m = width_m;
     state.geometry.length_m = length_m;
     state.geometry.height_m = height_m;
     if (width_m !== prevW) room?.setRoomWidth?.(width_m);
     if (length_m !== prevL) room?.setRoomLength?.(length_m);
-    if (height_m !== state.geometry.height_m) room?.setRoomHeight?.(height_m);
+    if (height_m !== prevH) room?.setRoomHeight?.(height_m);
     _centreListener();
     room?.update?.();
     clubAPI?.setArea?.(floorAreaM2());
