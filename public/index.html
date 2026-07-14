@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Measurely Club: Acoustic Consultation for Bars &amp; Clubs</title>
+<meta name="description" content="Sweep the dance floor, model the venue, present the system. The Acoustic Engine for sound system installers.">
+<meta name="theme-color" content="#0A0A0A">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700;9..40,800&display=swap">
+
+<!-- Engine load order: tokens.css -> engine measurely-core.css -> engine component CSS -> consumer overrides -->
+<link rel="stylesheet" href="css/global/tokens.css?v=2026-07-14-1">
+<link rel="stylesheet" href="engine/css/measurely-core.css?v=2026-07-14-1">
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "./js/vendor/three/three.module.js?v=2026-07-14-1"
+  }
+}
+</script>
+<script src="engine/js/vendor/three/three.min.js?v=2026-07-14-1" defer></script>
+<script src="engine/js/vendor/three/OrbitControls.js?v=2026-07-14-1" defer></script>
+<script src="engine/js/treatment-registry.js?v=2026-07-14-1" defer></script>
+
+<style>
+  html, body { margin: 0; height: 100%; background: var(--cl-bg, #0A0A0A); font-family: var(--cl-font, 'DM Sans', sans-serif); overflow: hidden; }
+  #roomMount { position: fixed; inset: 0; }
+</style>
+</head>
+<body>
+  <div id="roomMount"></div>
+
+  <script type="module">
+    import { initRoom3D } from './engine/js/room3d.js?v=2026-07-14-1';
+
+    // Placeholder venue state — dance floor centre is the measurement position,
+    // not a listening seat. Club-specific fields (capacity, occupied-state,
+    // power calc) land in a later pass; see README.md roadmap.
+    const venueState = {
+      room_type: 'club',
+      geometry: {
+        length_m: 15, width_m: 10, height_m: 4.5,
+        ceiling_type: 'flat', ceiling_height_secondary_m: 4.5,
+        ceiling_slant_direction: 'left_to_right', ceiling_gable_axis: 'depth',
+      },
+      setup: {
+        speaker_type: 'floorstander', spk_spacing_m: 6, spk_front_m: 1.0,
+        tweeter_height_m: 2.2, toe_in_deg: 0, listener_front_m: 7.5,
+        listener_offset_m: 0, subwoofer: true,
+      },
+      environment: {
+        floor_material: 'hard',
+        furniture: { opt_area_rug: false, opt_sofa: false, opt_coffee_table: false, seating_type: 'none' },
+        treatment: { wall_panel_mode: 'none', side_panel_mode: 'none', bass_trap_mode: 'none', ceiling_panel_mode: 'none' },
+      },
+    };
+
+    const api = initRoom3D({ mountId: 'roomMount', getRoomData: () => venueState, mode: 'setup', showLabels: true });
+    api?.frameRoom?.();
+    api?.resize?.();
+    window.addEventListener('resize', () => api?.resize?.());
+  </script>
+</body>
+</html>

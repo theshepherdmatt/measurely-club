@@ -1,0 +1,24 @@
+/*
+  measurely-club — Semantic Tokens
+
+  Load order: engine/css/measurely-core.css → this file
+
+  v2 brand: monochrome palette, single teal accent (#3A9D93), DM Sans.
+  --cl-* aliases bridge the engine's --mly-* cascade to club-specific naming,
+  same pattern as measurely-retail's --rt-* tokens.
+*/
+
+:root {
+    --cl-accent:      #3A9D93;
+    --cl-bg:          var(--mly-bg-app);
+    --cl-surface:     var(--mly-surface-glass);
+    --cl-surface2:    var(--mly-bg-recessed);
+    --cl-border:      var(--mly-border-light);
+    --cl-text:        var(--mly-brand-text, #1A1A1A);
+    --cl-text-muted:  var(--mly-brand-text-muted, #666666);
+    --cl-good:        var(--mly-status-good);
+    --cl-ok:          var(--mly-status-warn);
+    --cl-warn:        var(--mly-status-bad);
+    --cl-font:        var(--mly-font-family);
+    --cl-radius:      var(--mly-radius-sm);
+}

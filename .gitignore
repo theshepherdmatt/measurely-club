@@ -1,0 +1,18 @@
+# AI/Claude Skills
+.claude/
+
+# Local OS junk
+.DS_Store
+Thumbs.db
+
+# Node/Dependency bloat (just in case)
+node_modules/
+
+# wrangler files
+.wrangler
+.dev.vars*
+!.dev.vars.example
+.env*
+!.env.example
+
+dist/
