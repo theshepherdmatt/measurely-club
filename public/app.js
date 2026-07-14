@@ -1,4 +1,4 @@
-import { initRoom3D, OVERLAY_META } from './engine/js/room3d.js?v=19';
+import { initRoom3D, OVERLAY_META } from './engine/js/room3d.js?v=21';
 
 // Plain state object: the single source of truth for the room viewport.
 // getRoomData() below reads straight from this on every rebuild.
@@ -179,5 +179,21 @@ if (btnToggleCrowd) {
       e.currentTarget.classList.remove('active');
     }
     room?.setCrowd?.(_crowdOn);
+  });
+}
+
+let _discoOn = false; // start inactive
+const btnToggleDisco = document.getElementById('btnToggleDisco');
+if (btnToggleDisco) {
+  // Trigger initial state
+  room?.setDisco?.(false);
+  btnToggleDisco.addEventListener('click', (e) => {
+    _discoOn = !_discoOn;
+    if (_discoOn) {
+      e.currentTarget.classList.add('active');
+    } else {
+      e.currentTarget.classList.remove('active');
+    }
+    room?.setDisco?.(_discoOn);
   });
 }
