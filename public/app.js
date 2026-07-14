@@ -102,10 +102,11 @@ const clubAPI = SCL?.renderClubSection('clubMount', {
   onChange({ crowd_limit }) {
     state.crowd_limit = crowd_limit;
     room?.update?.();
+    speakersAPI?.setRoomContext?.(state.geometry.width_m, state.geometry.length_m, state.crowd_limit);
   },
 });
 
-SCL?.renderClubSpeakersSection('clubSpeakersMount', {
+const speakersAPI = SCL?.renderClubSpeakersSection('clubSpeakersMount', {
   state: {
     spk_spacing_m: state.setup.spk_spacing_m,
     pa_mount_height_m: state.pa_mount_height_m,
@@ -114,6 +115,9 @@ SCL?.renderClubSpeakersSection('clubSpeakersMount', {
     bass_bin_placement: state.bass_bin_placement,
     bass_bin_count: state.bass_bin_count,
     spk_front_m: state.setup.spk_front_m,
+    width_m: state.geometry.width_m,
+    length_m: state.geometry.length_m,
+    crowd_limit: state.crowd_limit,
   },
   onChange({ spk_spacing_m, pa_mount_height_m, toe_in_deg, rear_pa, bass_bin_placement, bass_bin_count, spk_front_m }) {
     state.setup.spk_spacing_m = spk_spacing_m;
@@ -187,6 +191,7 @@ SCL?.renderRoomSection('roomMount', {
     room?.update?.();
     clubAPI?.setArea?.(floorAreaM2());
     boothAPI?.setMaxBoothFront?.(maxBoothFrontFor(length_m));
+    speakersAPI?.setRoomContext?.(width_m, length_m, state.crowd_limit);
   },
 });
 
@@ -205,38 +210,12 @@ qaBtns.forEach(btn => {
   });
 });
 
-// Split Tops (blue, L/R rings) vs Bass (pink, SUB rings) — was a single
-// combined Waves toggle in the floating central control bar; moved into
-// the sidebar as two independent buttons per setTopWaves/setSubWaves.
-let _topWavesOn = false;
-let _subWavesOn = false;
-const btnToggleTopWaves = document.getElementById('btnToggleTopWaves');
-const btnToggleSubWaves = document.getElementById('btnToggleSubWaves');
+// Tops/Bass wave-ring toggles removed from the sidebar (too much clutter
+// alongside crowd + speaker/bass-bin counts) — waves stay off permanently.
 const waveKey = document.getElementById('waveKey');
 room?.setTopWaves?.(false);
 room?.setSubWaves?.(false);
 if (waveKey) waveKey.style.display = 'none';
-
-function _syncWaveKey() {
-  if (waveKey) waveKey.style.display = (_topWavesOn || _subWavesOn) ? 'flex' : 'none';
-}
-
-if (btnToggleTopWaves) {
-  btnToggleTopWaves.addEventListener('click', (e) => {
-    _topWavesOn = !_topWavesOn;
-    e.currentTarget.classList.toggle('active', _topWavesOn);
-    room?.setTopWaves?.(_topWavesOn);
-    _syncWaveKey();
-  });
-}
-if (btnToggleSubWaves) {
-  btnToggleSubWaves.addEventListener('click', (e) => {
-    _subWavesOn = !_subWavesOn;
-    e.currentTarget.classList.toggle('active', _subWavesOn);
-    room?.setSubWaves?.(_subWavesOn);
-    _syncWaveKey();
-  });
-}
 
 let _crowdOn = true; // start active
 const btnToggleCrowd = document.getElementById('btnToggleCrowd');
@@ -355,11 +334,12 @@ if (landscapeSidebarHandle || landscapeOverlaysHandle) {
   // it -- see the note above). A partial shift keeps most of the room
   // visible under the translucent drawer edge instead of running it
   // off the opposite side.
-  const LANDSCAPE_ROOM_SHIFT_FACTOR = 0.4;
+  const LANDSCAPE_ROOM_SHIFT_FACTOR_LEFT = 0.2;
+  const LANDSCAPE_ROOM_SHIFT_FACTOR_RIGHT = 0.3;
   function setLandscapeRoomShift(side) { // 'left' | 'right' | null
     let x = '0px';
-    if (side === 'left') x = `${Math.round(landscapeOverlaysBar.offsetWidth * LANDSCAPE_ROOM_SHIFT_FACTOR)}px`;
-    else if (side === 'right') x = `-${Math.round(landscapeSidebar.offsetWidth * LANDSCAPE_ROOM_SHIFT_FACTOR)}px`;
+    if (side === 'left') x = `${Math.round(landscapeOverlaysBar.offsetWidth * LANDSCAPE_ROOM_SHIFT_FACTOR_LEFT)}px`;
+    else if (side === 'right') x = `-${Math.round(landscapeSidebar.offsetWidth * LANDSCAPE_ROOM_SHIFT_FACTOR_RIGHT)}px`;
     document.documentElement.style.setProperty('--room-shift-x', x);
   }
 

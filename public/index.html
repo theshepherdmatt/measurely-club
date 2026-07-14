@@ -66,12 +66,6 @@
     border-color: #1a1a1a;
   }
 
-  /* Tops/Bass wave toggles colour-code to match the wave-ring legend
-     (teal = mid/high, pink = low/sub) instead of the generic black
-     active-fill, so the button state reads at a glance. */
-  #btnToggleTopWaves.active { background: var(--brand-accent, #3A9D93); border-color: var(--brand-accent, #3A9D93); }
-  #btnToggleSubWaves.active { background: #ff2d78; border-color: #ff2d78; }
-
   /* Floating UI from ecommerce */
   .segmented {
     display: flex;
@@ -419,7 +413,7 @@
 <script src="./engine/js/engine/materials/surfaces.js?v=13"></script>
 <script src="./engine/js/engine/imageSource.js"></script>
 <script src="./engine/js/engine/acoustics.js?v=13"></script>
-<script src="./engine/js/sidebar-component-library.js?v=17"></script>
+<script src="./engine/js/sidebar-component-library.js?v=18"></script>
 </head>
 <body>
 
@@ -461,13 +455,6 @@
     <div class="club-section" id="sectionPA">
       <div class="club-group-label">PA rig</div>
       <div id="clubSpeakersMount"></div>
-      <div style="margin-top: 16px;">
-        <div class="club-group-label" style="margin-bottom: 8px;">Sound Waves</div>
-        <div style="display: flex; gap: 8px;">
-          <button type="button" class="sbox-btn" id="btnToggleTopWaves" style="flex: 1;">Tops</button>
-          <button type="button" class="sbox-btn" id="btnToggleSubWaves" style="flex: 1;">Bass</button>
-        </div>
-      </div>
     </div>
     <div class="club-section" id="sectionBooth">
       <div class="club-group-label">DJ booth</div>
@@ -506,6 +493,6 @@
 <button type="button" class="landscape-edge-handle landscape-edge-handle-left" id="landscapeOverlaysHandle" aria-label="Acoustic overlays">Overlays</button>
 <button type="button" class="landscape-edge-handle landscape-edge-handle-right" id="landscapeSidebarHandle" aria-label="Room settings">Menu</button>
 
-<script type="module" src="./app.js?v=20"></script>
+<script type="module" src="./app.js?v=22"></script>
 </body>
 </html>
