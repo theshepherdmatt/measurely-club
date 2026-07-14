@@ -99,6 +99,12 @@ SCL?.renderRoomSection('roomMount', {
     length_m: state.geometry.length_m,
     height_m: state.geometry.height_m,
   },
+  // Hi-fi-room defaults (length max 10m) don't fit a club floor.
+  ranges: {
+    width_m:  { min: 4, max: 25, step: 0.5 },
+    length_m: { min: 5, max: 30, step: 0.5 },
+    height_m: { min: 2.5, max: 8, step: 0.1 },
+  },
   onChange({ width_m, length_m, height_m }) {
     const prevW = state.geometry.width_m;
     const prevL = state.geometry.length_m;
