@@ -27,15 +27,16 @@ None of the below is built yet. This is the scaffold commit only.
 
 ## Repo structure
 
-Mirrors `measurely-retail`:
+Follows `measurely-ecommerce` — the reusable template for client builds (ecommerce itself is the Anthill build; club is the second build off the same base):
 
 - `public/engine/` — git submodule, shared 3D acoustic engine (never forked)
-- `public/index.html` — app shell, loads the 3D room simulator
-- `public/css/global/tokens.css` — v2 brand tokens (teal `#3A9D93`, DM Sans), aliased onto the engine's `--mly-*` cascade
-- `wrangler.jsonc` — Cloudflare Pages config, `APP_DOMAIN` = `club.measurely.uk`
+- `public/index.html` — app shell: brand tokens inline, script tag stack, mounts the 3D room simulator
+- `public/app.js` — room state + `initRoom3D` bootstrap
+- `public/styles.css` — `@import "./engine/css/index.css"` only; club-specific CSS overrides go here as they're added
+- No `wrangler.jsonc`, no in-repo `CNAME` — deploy config and custom domain live in the Cloudflare Pages dashboard, same as ecommerce
 
 ## Deploy
 
-Not yet deployed. When ready: `wrangler pages deploy public --project-name=measurely-club`.
+Not yet deployed. Cloudflare Pages project to be created and connected via git integration (build output directory `public`), domain `club.measurely.uk` set in the dashboard once ready.
 
 Cache-buster discipline applies here too: bump `?v=` query strings on every engine submodule bump.
