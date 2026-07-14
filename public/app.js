@@ -18,10 +18,6 @@ const state = {
   },
   setup: {
     // Two tops flanking the booth — coverage-driven, not imaging-driven.
-    // Bass bins (mono, stacked centre under the booth) aren't wired up
-    // yet: the engine's existing room.subwoofer path renders a single
-    // small home-rack-style sub, not a 2-4-high club stack. That's the
-    // next piece of placement work, not done here — see README.md roadmap.
     speaker_type: 'pa_top',
     spk_spacing_m: 6,
     spk_front_m: 1.0,
@@ -31,6 +27,9 @@ const state = {
     listener_offset_m: 0,
     subwoofer: false,
   },
+  // Bass bins: mono centre-stack under the booth, not spaced L/R pairs —
+  // avoids power-alley cancellation across the floor.
+  bass_bin_count: 2,
   floor_material: 'hard',
 };
 
