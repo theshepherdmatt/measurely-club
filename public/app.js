@@ -1,4 +1,4 @@
-import { initRoom3D, OVERLAY_META } from './engine/js/room3d.js?v=40';
+import { initRoom3D, OVERLAY_META } from './engine/js/room3d.js?v=41';
 
 // Plain state object: the single source of truth for the room viewport.
 // getRoomData() below reads straight from this on every rebuild.
@@ -111,12 +111,18 @@ SCL?.renderClubSpeakersSection('clubSpeakersMount', {
     pa_mount_height_m: state.pa_mount_height_m,
     toe_in_deg: state.setup.toe_in_deg,
     rear_pa: state.rear_pa,
+    bass_bin_placement: state.bass_bin_placement,
+    bass_bin_count: state.bass_bin_count,
+    spk_front_m: state.setup.spk_front_m,
   },
-  onChange({ spk_spacing_m, pa_mount_height_m, toe_in_deg, rear_pa }) {
+  onChange({ spk_spacing_m, pa_mount_height_m, toe_in_deg, rear_pa, bass_bin_placement, bass_bin_count, spk_front_m }) {
     state.setup.spk_spacing_m = spk_spacing_m;
     state.pa_mount_height_m = pa_mount_height_m;
     state.setup.toe_in_deg = toe_in_deg;
     state.rear_pa = rear_pa;
+    state.bass_bin_placement = bass_bin_placement;
+    state.bass_bin_count = bass_bin_count;
+    state.setup.spk_front_m = spk_front_m;
     room?.update?.();
   },
 });
@@ -125,18 +131,12 @@ SCL?.renderClubBoothSection('clubBoothMount', {
   state: {
     deck_config: state.deck_config,
     dj_riser_enabled: state.dj_riser_enabled,
-    bass_bin_placement: state.bass_bin_placement,
-    bass_bin_count: state.bass_bin_count,
-    spk_front_m: state.setup.spk_front_m,
     booth_front_m: state.booth_front_m,
     booth_offset_m: state.booth_offset_m,
   },
-  onChange({ deck_config, dj_riser_enabled, bass_bin_placement, bass_bin_count, spk_front_m, booth_front_m, booth_offset_m }) {
+  onChange({ deck_config, dj_riser_enabled, booth_front_m, booth_offset_m }) {
     state.deck_config = deck_config;
     state.dj_riser_enabled = dj_riser_enabled;
-    state.bass_bin_placement = bass_bin_placement;
-    state.bass_bin_count = bass_bin_count;
-    state.setup.spk_front_m = spk_front_m;
     state.booth_front_m = booth_front_m;
     state.booth_offset_m = booth_offset_m;
     room?.update?.();
