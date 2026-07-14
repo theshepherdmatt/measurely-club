@@ -350,10 +350,16 @@ if (landscapeSidebarHandle || landscapeOverlaysHandle) {
   // (dynamic toolbar), so a hardcoded copy of the CSS formula drifted
   // out of sync and overshot the drawer by a couple hundred px, leaving
   // a dead grey gap between the room and the drawer.
+  // Shifting the full drawer width pushed the room too far (it was
+  // sliding an equal-width canvas rather than truly revealing more of
+  // it -- see the note above). A partial shift keeps most of the room
+  // visible under the translucent drawer edge instead of running it
+  // off the opposite side.
+  const LANDSCAPE_ROOM_SHIFT_FACTOR = 0.4;
   function setLandscapeRoomShift(side) { // 'left' | 'right' | null
     let x = '0px';
-    if (side === 'left') x = `${landscapeOverlaysBar.offsetWidth}px`;
-    else if (side === 'right') x = `-${landscapeSidebar.offsetWidth}px`;
+    if (side === 'left') x = `${Math.round(landscapeOverlaysBar.offsetWidth * LANDSCAPE_ROOM_SHIFT_FACTOR)}px`;
+    else if (side === 'right') x = `-${Math.round(landscapeSidebar.offsetWidth * LANDSCAPE_ROOM_SHIFT_FACTOR)}px`;
     document.documentElement.style.setProperty('--room-shift-x', x);
   }
 
