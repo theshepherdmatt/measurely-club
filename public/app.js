@@ -1,4 +1,4 @@
-import { initRoom3D, OVERLAY_META } from './engine/js/room3d.js?v=14';
+import { initRoom3D, OVERLAY_META } from './engine/js/room3d.js?v=19';
 
 // Plain state object: the single source of truth for the room viewport.
 // getRoomData() below reads straight from this on every rebuild.
@@ -149,6 +149,7 @@ qaBtns.forEach(btn => {
 
 let _wavesOn = true; // start active
 const btnToggleWaves = document.getElementById('btnToggleWaves');
+const waveKey = document.getElementById('waveKey');
 if (btnToggleWaves) {
   // Trigger initial state
   room?.setWaves?.(true);
@@ -156,8 +157,10 @@ if (btnToggleWaves) {
     _wavesOn = !_wavesOn;
     if (_wavesOn) {
       e.currentTarget.classList.add('active');
+      if (waveKey) waveKey.style.display = 'flex';
     } else {
       e.currentTarget.classList.remove('active');
+      if (waveKey) waveKey.style.display = 'none';
     }
     room?.setWaves?.(_wavesOn);
   });
