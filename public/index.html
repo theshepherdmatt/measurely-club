@@ -14,6 +14,13 @@
   :root {
     --viewport-bg: #0A0A0A;
     --brand-accent: #3A9D93;
+    --configbar-bg: #1A1714;
+    --viewport-border: rgba(255, 255, 255, 0.1);
+    --viewport-text-muted: rgba(255, 255, 255, 0.55);
+    --viewport-surface-hover: rgba(255, 255, 255, 0.1);
+    --viewport-text: #FAFAFA;
+    --control-bg:  #F2F2F2;
+    --text-primary:  #1A1A1A;
   }
   html, body { margin: 0; height: 100%; background: var(--viewport-bg); font-family: 'DM Sans', system-ui, sans-serif; }
   #appShell { display: flex; width: 100vw; height: 100vh; }
@@ -36,6 +43,114 @@
     margin: 0 0 12px;
   }
   .club-section { margin-bottom: 28px; }
+
+  /* Floating UI from ecommerce */
+  .segmented {
+    display: flex;
+    gap: 1px;
+    background: var(--viewport-border);
+    border: 1px solid var(--viewport-border);
+  }
+  .seg-btn {
+    font-family: inherit;
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
+    color: var(--viewport-text-muted);
+    background: var(--configbar-bg);
+    border: none;
+    border-radius: 0;
+    padding: 6px 16px;
+    cursor: pointer;
+    text-align: center;
+    transition: background 0.15s ease, color 0.15s ease;
+  }
+  .seg-btn:hover:not(.active) { background: var(--viewport-surface-hover); color: var(--viewport-text); }
+  .seg-btn.active { background: var(--viewport-text); color: var(--viewport-bg); }
+  #quickAcousticsBar {
+    position: absolute;
+    bottom: 32px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+    background: var(--configbar-bg);
+    padding: 3px;
+    border: 1px solid var(--viewport-border);
+    display: flex;
+    gap: 4px;
+  }
+
+  /* Anthill flat UI overrides for engine components */
+  select.measurely-select {
+    width: 100%;
+    background-color: #FFFFFF;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%231A1A1A' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    border: 1px solid var(--text-primary);
+    color: var(--text-primary);
+    padding: 8px 32px 8px 12px;
+    border-radius: 0;
+    font-family: inherit;
+    font-size: 13px;
+    outline: none;
+    appearance: none;
+    cursor: pointer;
+  }
+  select.measurely-select:hover {
+    background-color: var(--control-bg);
+  }
+  select.measurely-select:focus {
+    border-color: var(--text-primary);
+    box-shadow: none;
+  }
+
+  .measurely-slider {
+    height: 3px;
+    border-radius: 0;
+    background: linear-gradient(
+      90deg,
+      var(--text-primary) var(--fill, 50%),
+      var(--border, #E8E8E8) var(--fill, 50%)
+    );
+  }
+  .measurely-slider::-webkit-slider-thumb {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 12px;
+    height: 20px;
+    border-radius: 0;
+    background: var(--text-primary);
+    border: none;
+    box-shadow: none;
+    cursor: grab;
+    transition: background 0.1s ease;
+  }
+  .measurely-slider:active::-webkit-slider-thumb {
+    cursor: grabbing;
+    transform: none;
+    background: #333333;
+  }
+  .measurely-slider::-moz-range-thumb {
+    width: 12px;
+    height: 20px;
+    border-radius: 0;
+    background: var(--text-primary);
+    border: none;
+    box-shadow: none;
+    cursor: grab;
+    transition: background 0.1s ease;
+  }
+  .measurely-slider:active::-moz-range-thumb {
+    cursor: grabbing;
+    background: #333333;
+  }
+  @media (pointer: coarse) {
+    .measurely-slider { height: 4px; }
+    .measurely-slider::-webkit-slider-thumb { width: 16px; height: 28px; }
+    .measurely-slider::-moz-range-thumb { width: 16px; height: 28px; }
+  }
 </style>
 
 <script type="importmap">
@@ -60,7 +175,21 @@
 <body>
 
 <div id="appShell">
-  <div id="roomViewport"></div>
+  <div style="position: relative; flex: 1 1 auto; min-width: 0; height: 100%;">
+    <div id="roomViewport" style="position: absolute; inset: 0;"></div>
+    
+    <div id="quickAcousticsBar">
+      <div class="segmented" id="quickAcousticsSegmented" style="background: transparent; border: none;">
+        <button type="button" class="seg-btn active" data-overlay="none" style="padding: 6px 16px; white-space: nowrap;">None</button>
+        <button type="button" class="seg-btn" data-overlay="side_reflections" style="padding: 6px 16px; white-space: nowrap;">Reflections</button>
+        <button type="button" class="seg-btn" data-overlay="bandwidth" style="padding: 6px 16px; white-space: nowrap;">Bass Modes</button>
+        <button type="button" class="seg-btn" data-overlay="peaks_dips" style="padding: 6px 16px; white-space: nowrap;">Peaks & Dips</button>
+      </div>
+      <div class="qa-waves-toggle" style="width: 1px; background: var(--viewport-border); margin: 2px 0;"></div>
+      <button type="button" class="seg-btn active qa-waves-toggle" id="btnToggleWaves" style="padding: 6px 16px; white-space: nowrap; border-radius: 0;">Waves</button>
+      <button type="button" class="seg-btn active qa-waves-toggle" id="btnToggleCrowd" style="padding: 6px 16px; white-space: nowrap; border-radius: 0;">Crowd</button>
+    </div>
+  </div>
   <div id="sidebar">
     <div class="club-section">
       <div class="club-group-label">Venue dimensions</div>

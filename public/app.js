@@ -78,24 +78,24 @@ function floorAreaM2() {
 const clubAPI = SCL?.renderClubSection('clubMount', {
   state: {
     density: state.density,
-    bass_bin_count: state.bass_bin_count,
     area_m2: floorAreaM2(),
   },
-  onChange({ density, bass_bin_count }) {
+  onChange({ density }) {
     state.density = density;
-    state.bass_bin_count = bass_bin_count;
     room?.update?.();
   },
 });
 
 SCL?.renderClubSpeakersSection('clubSpeakersMount', {
   state: {
+    bass_bin_count: state.bass_bin_count,
     spk_spacing_m: state.setup.spk_spacing_m,
     spk_front_m: state.setup.spk_front_m,
     booth_front_m: state.booth_front_m,
     pa_mount_height_m: state.pa_mount_height_m,
   },
-  onChange({ spk_spacing_m, spk_front_m, booth_front_m, pa_mount_height_m }) {
+  onChange({ bass_bin_count, spk_spacing_m, spk_front_m, booth_front_m, pa_mount_height_m }) {
+    state.bass_bin_count = bass_bin_count;
     state.setup.spk_spacing_m = spk_spacing_m;
     state.setup.spk_front_m = spk_front_m;
     state.booth_front_m = booth_front_m;
@@ -131,3 +131,50 @@ SCL?.renderRoomSection('roomMount', {
     clubAPI?.setArea?.(floorAreaM2());
   },
 });
+
+// Floating quick acoustics bar bindings
+const qaBtns = document.querySelectorAll('#quickAcousticsSegmented .seg-btn');
+qaBtns.forEach(btn => {
+  btn.addEventListener('click', (e) => {
+    qaBtns.forEach(b => b.classList.remove('active'));
+    e.currentTarget.classList.add('active');
+    const overlay = e.currentTarget.dataset.overlay;
+    if (overlay === 'none') {
+      room?.focusIssue?.(null);
+    } else {
+      room?.focusIssue?.(overlay);
+    }
+  });
+});
+
+let _wavesOn = true; // start active
+const btnToggleWaves = document.getElementById('btnToggleWaves');
+if (btnToggleWaves) {
+  // Trigger initial state
+  room?.setWaves?.(true);
+  btnToggleWaves.addEventListener('click', (e) => {
+    _wavesOn = !_wavesOn;
+    if (_wavesOn) {
+      e.currentTarget.classList.add('active');
+    } else {
+      e.currentTarget.classList.remove('active');
+    }
+    room?.setWaves?.(_wavesOn);
+  });
+}
+
+let _crowdOn = true; // start active
+const btnToggleCrowd = document.getElementById('btnToggleCrowd');
+if (btnToggleCrowd) {
+  // Trigger initial state
+  room?.setCrowd?.(true);
+  btnToggleCrowd.addEventListener('click', (e) => {
+    _crowdOn = !_crowdOn;
+    if (_crowdOn) {
+      e.currentTarget.classList.add('active');
+    } else {
+      e.currentTarget.classList.remove('active');
+    }
+    room?.setCrowd?.(_crowdOn);
+  });
+}
