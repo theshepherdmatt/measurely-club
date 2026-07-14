@@ -1,4 +1,4 @@
-import { initRoom3D, OVERLAY_META } from './engine/js/room3d.js?v=23';
+import { initRoom3D, OVERLAY_META } from './engine/js/room3d.js?v=24';
 
 // Plain state object: the single source of truth for the room viewport.
 // getRoomData() below reads straight from this on every rebuild.
@@ -37,9 +37,10 @@ const state = {
   // pa_top wall-bracket mount height (permanent install). Tilt is derived
   // automatically in the engine — aimed at ear height on the dance floor.
   pa_mount_height_m: 3.0,
-  // Dance floor capacity density: 'comfortable' 2/m² | 'packed' 4/m².
-  density: 'comfortable',
+  // Dance floor capacity limit
+  crowd_limit: 200,
   floor_material: 'hard',
+  rear_pa: false,
 };
 
 function _centreListener() {
@@ -55,6 +56,8 @@ function getRoomData() {
     bass_bin_count: state.bass_bin_count,
     booth_front_m: state.booth_front_m,
     pa_mount_height_m: state.pa_mount_height_m,
+    crowd_limit: state.crowd_limit,
+    rear_pa: state.rear_pa,
     environment: {
       floor_material: state.floor_material,
       furniture: { opt_area_rug: false, opt_sofa: false, opt_coffee_table: false, seating_type: 'none' },
@@ -77,11 +80,11 @@ function floorAreaM2() {
 
 const clubAPI = SCL?.renderClubSection('clubMount', {
   state: {
-    density: state.density,
+    crowd_limit: state.crowd_limit,
     area_m2: floorAreaM2(),
   },
-  onChange({ density }) {
-    state.density = density;
+  onChange({ crowd_limit }) {
+    state.crowd_limit = crowd_limit;
     room?.update?.();
   },
 });
@@ -93,13 +96,15 @@ SCL?.renderClubSpeakersSection('clubSpeakersMount', {
     spk_front_m: state.setup.spk_front_m,
     booth_front_m: state.booth_front_m,
     pa_mount_height_m: state.pa_mount_height_m,
+    rear_pa: state.rear_pa,
   },
-  onChange({ bass_bin_count, spk_spacing_m, spk_front_m, booth_front_m, pa_mount_height_m }) {
+  onChange({ bass_bin_count, spk_spacing_m, spk_front_m, booth_front_m, pa_mount_height_m, rear_pa }) {
     state.bass_bin_count = bass_bin_count;
     state.setup.spk_spacing_m = spk_spacing_m;
     state.setup.spk_front_m = spk_front_m;
     state.booth_front_m = booth_front_m;
     state.pa_mount_height_m = pa_mount_height_m;
+    state.rear_pa = rear_pa;
     room?.update?.();
   },
 });
@@ -147,12 +152,12 @@ qaBtns.forEach(btn => {
   });
 });
 
-let _wavesOn = true; // start active
+let _wavesOn = false; // start inactive
 const btnToggleWaves = document.getElementById('btnToggleWaves');
 const waveKey = document.getElementById('waveKey');
 if (btnToggleWaves) {
   // Trigger initial state
-  room?.setWaves?.(true);
+  room?.setWaves?.(false);
   btnToggleWaves.addEventListener('click', (e) => {
     _wavesOn = !_wavesOn;
     if (_wavesOn) {
