@@ -343,8 +343,17 @@ if (landscapeSidebarHandle || landscapeOverlaysHandle) {
   // (or wanted) here -- the canvas dimensions never change, only its
   // on-screen position. Left drawer covers the room's left edge, so the
   // room shifts right (+X) to clear it; right drawer shifts it left (-X).
+  //
+  // Shift amount is read from the drawer's own offsetWidth rather than
+  // a duplicated min(60vw, Npx) formula in JS -- on real devices mobile
+  // Safari's vw can disagree with the drawer's actual laid-out width
+  // (dynamic toolbar), so a hardcoded copy of the CSS formula drifted
+  // out of sync and overshot the drawer by a couple hundred px, leaving
+  // a dead grey gap between the room and the drawer.
   function setLandscapeRoomShift(side) { // 'left' | 'right' | null
-    const x = side === 'left' ? 'min(60vw, 260px)' : side === 'right' ? 'max(-60vw, -300px)' : '0px';
+    let x = '0px';
+    if (side === 'left') x = `${landscapeOverlaysBar.offsetWidth}px`;
+    else if (side === 'right') x = `-${landscapeSidebar.offsetWidth}px`;
     document.documentElement.style.setProperty('--room-shift-x', x);
   }
 
