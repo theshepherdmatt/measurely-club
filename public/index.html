@@ -158,6 +158,10 @@
   }
   .seg-btn:hover:not(.active) { background: var(--viewport-surface-hover); color: var(--viewport-text); }
   .seg-btn.active { background: var(--viewport-text); color: var(--viewport-bg); }
+  /* Disco gets its own accent when active — UI chrome, not the 3D scene,
+     so the engine skill's pink-only-in-SBIR/Resonance rule doesn't apply
+     here; pink is just thematically the obvious choice for "Disco". */
+  #btnToggleDisco.active { background: #ff2d78; color: #ffffff; }
   #quickAcousticsBar {
     position: absolute;
     bottom: 32px;
@@ -172,6 +176,36 @@
     flex-direction: column;
     gap: 3px;
   }
+  /* Peaks & Dips frequency row — a third row inside #quickAcousticsBar,
+     shown only while that overlay is active (toggled in app.js). Being a
+     child of the Sound bar itself, not a separate floating element, it
+     automatically inherits the bar's responsive behaviour: floating pill
+     on desktop, bottom sheet in portrait, left drawer in landscape — no
+     extra positioning or media queries needed. */
+  #peaksFreqRow { display: none; flex-direction: column; gap: 8px; padding: 6px 8px 2px; }
+  #peaksFreqRow.visible { display: flex; }
+  .peaks-freq-legend { display: flex; gap: 14px; }
+  .peaks-freq-chip {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 10.5px;
+    font-weight: 500;
+    color: var(--viewport-text-muted);
+  }
+  .peaks-freq-chip .dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    flex: 0 0 auto;
+  }
+  /* SCL's slider field ships with dark-on-light label colours by default;
+     this row sits on the same dark configbar background as the rest of
+     the Sound bar, so labels/values need the light palette used
+     elsewhere in this bar. */
+  #peaksFreqRow .demo-field-label,
+  #peaksFreqRow .demo-field-value { color: var(--viewport-text); }
+
   /* Two labelled horizontal sections inside the quick bar: SOUND
      (overlays + crowd/disco) over VIEW (camera presets) — one long
      row of ten buttons read as a single mush. */
@@ -658,7 +692,9 @@
     <div id="quickAcousticsBar">
       <div class="qa-row">
         <div class="segmented" id="quickAcousticsSegmented" style="background: transparent; border: none;">
-          <button type="button" class="seg-btn active" data-overlay="none" style="padding: 6px 16px; white-space: nowrap;">None</button>
+          <!-- No "None" button: each overlay button is a toggle — click
+               the active one again to switch the overlay off (see the
+               qaBtns handler in app.js). -->
           <button type="button" class="seg-btn" data-overlay="side_reflections" style="padding: 6px 16px; white-space: nowrap;">Reflections</button>
           <button type="button" class="seg-btn" data-overlay="bandwidth" style="padding: 6px 16px; white-space: nowrap;">Bass Modes</button>
           <button type="button" class="seg-btn" data-overlay="peaks_dips" style="padding: 6px 16px; white-space: nowrap;">Peaks & Dips</button>
@@ -666,6 +702,18 @@
         <div class="qa-waves-toggle" style="width: 1px; background: var(--viewport-border); margin: 2px 0;"></div>
         <button type="button" class="seg-btn active qa-waves-toggle" id="btnToggleCrowd" style="padding: 6px 16px; white-space: nowrap; border-radius: 0;">Crowd</button>
         <button type="button" class="seg-btn qa-waves-toggle" id="btnToggleDisco" style="padding: 6px 16px; white-space: nowrap; border-radius: 0;">Disco</button>
+      </div>
+
+      <!-- Peaks & Dips frequency row — shown only while that overlay is
+           active (app.js's qaBtns handler toggles #peaksFreqRow.visible).
+           Houses the engine's existing renderPeaksFreqSlider (20-240Hz,
+           wired to room.setPeaksFreq) plus the overlay's own teal/purple
+           legend chips (OVERLAY_META.peaks_dips.legend) as the "what does
+           this colour mean" indicator — no new engine sampling, just
+           surfacing what the overlay already defines. -->
+      <div id="peaksFreqRow" class="qa-row">
+        <div class="peaks-freq-legend" id="peaksFreqLegend"></div>
+        <div id="peaksFreqMount" style="flex: 1 1 auto;"></div>
       </div>
     </div>
 
@@ -731,6 +779,6 @@
 <button type="button" class="landscape-edge-handle landscape-edge-handle-left" id="landscapeOverlaysHandle" aria-label="Acoustic overlays">Overlays</button>
 <button type="button" class="landscape-edge-handle landscape-edge-handle-right" id="landscapeSidebarHandle" aria-label="Room settings">Menu</button>
 
-<script type="module" src="./app.js?v=34"></script>
+<script type="module" src="./app.js?v=35"></script>
 </body>
 </html>

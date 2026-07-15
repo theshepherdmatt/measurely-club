@@ -311,17 +311,53 @@ presetBtns.forEach(btn => {
   });
 });
 
-// Floating quick acoustics bar bindings
+// Floating quick acoustics bar bindings — each button is a toggle (no
+// separate "None" button): clicking the already-active one switches the
+// overlay off; clicking a different one swaps to it, same as before.
 const qaBtns = document.querySelectorAll('#quickAcousticsSegmented .seg-btn');
+const peaksFreqRow = document.getElementById('peaksFreqRow');
+const peaksFreqLegend = document.getElementById('peaksFreqLegend');
+
+// Legend chips sourced from the engine's own OVERLAY_META.peaks_dips.legend
+// (teal "Dip" / purple "Peak") — the "what does this colour mean"
+// indicator, with no new engine sampling needed.
+if (peaksFreqLegend && OVERLAY_META?.peaks_dips?.legend) {
+  for (const { color, label } of OVERLAY_META.peaks_dips.legend) {
+    const chip = document.createElement('span');
+    chip.className = 'peaks-freq-chip';
+    const dot = document.createElement('span');
+    dot.className = 'dot';
+    dot.style.background = typeof color === 'number' ? '#' + color.toString(16).padStart(6, '0') : color;
+    chip.appendChild(dot);
+    chip.appendChild(document.createTextNode(label));
+    peaksFreqLegend.appendChild(chip);
+  }
+}
+
+let peaksFreqAPI = null;
 qaBtns.forEach(btn => {
   btn.addEventListener('click', (e) => {
-    qaBtns.forEach(b => b.classList.remove('active'));
-    e.currentTarget.classList.add('active');
     const overlay = e.currentTarget.dataset.overlay;
-    if (overlay === 'none') {
+    const wasActive = e.currentTarget.classList.contains('active');
+    qaBtns.forEach(b => b.classList.remove('active'));
+    peaksFreqRow?.classList.remove('visible');
+
+    if (wasActive) {
       room?.focusIssue?.(null);
-    } else {
-      room?.focusIssue?.(overlay);
+      return; // second click on the active button just switches it off
+    }
+
+    e.currentTarget.classList.add('active');
+    room?.focusIssue?.(overlay);
+
+    if (overlay === 'peaks_dips') {
+      peaksFreqRow?.classList.add('visible');
+      if (!peaksFreqAPI) {
+        peaksFreqAPI = SCL?.renderPeaksFreqSlider('peaksFreqMount', {
+          value: room?.getPeaksFreq?.() ?? 50,
+          onChange(hz) { room?.setPeaksFreq?.(hz); },
+        });
+      }
     }
   });
 });
