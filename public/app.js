@@ -1,4 +1,4 @@
-import { initRoom3D, OVERLAY_META } from './engine/js/room3d.js?v=60';
+import { initRoom3D, OVERLAY_META } from './engine/js/room3d.js?v=61';
 
 // Plain state object: the single source of truth for the room viewport.
 // getRoomData() below reads straight from this on every rebuild.
@@ -246,18 +246,21 @@ camBtns.forEach(btn => {
     camBtns.forEach(b => b.classList.remove('active'));
     e.currentTarget.classList.add('active');
     const key = e.currentTarget.dataset.view;
-    if (key === 'overview') { room?.frameRoom?.(); return; }
+    // Slow, calm glide — the engine default (700ms instant-ish) reads
+    // snappy and aggressive when the camera dives into the crowd.
+    const CAMERA_GLIDE_MS = 2200;
+    if (key === 'overview') { room?.frameRoom?.({ animate: true, duration: CAMERA_GLIDE_MS }); return; }
     const v = clubCameraView(key);
-    if (v) room?.flyToRoomPos?.(v);
+    if (v) room?.flyToRoomPos?.({ ...v, duration: CAMERA_GLIDE_MS });
   });
 });
 
 // Tops/Bass wave-ring toggles removed from the sidebar (too much clutter
 // alongside crowd + speaker/bass-bin counts) — waves stay off permanently.
-const waveKey = document.getElementById('waveKey');
+// The #waveKey colour legend that went with them is gone from the HTML
+// too (it used to flash on load before this hide ran).
 room?.setTopWaves?.(false);
 room?.setSubWaves?.(false);
-if (waveKey) waveKey.style.display = 'none';
 
 let _crowdOn = true; // start active
 const btnToggleCrowd = document.getElementById('btnToggleCrowd');
@@ -291,56 +294,58 @@ if (btnToggleDisco) {
   });
 }
 
-// ── Mobile + tablet bottom tab bar (Floor / PA / Booth) ──────────────────
-// Ported from measurely-ecommerce's mobile pattern, simplified: club has
-// one #sidebar (not ecommerce's #configBar+#sidebar split), so this opens
-// the single sheet and scrolls it to the tapped section instead of
-// switching between two panels. Tapping the already-open tab collapses it.
-const mobileTabBar = document.getElementById('mobileTabBar');
-if (mobileTabBar) {
+// ── Mobile portrait: top-right hamburger + camera views in the Sound bar ──
+// Replaces the earlier Floor/PA/Booth bottom tab bar: one hamburger
+// toggles #sidebar as a right-edge drawer scrolling all three sections.
+// The drawer slides OVER the room via CSS transform — no layout resize,
+// so no --room-shift / room.resize() dance is needed here (the canvas
+// dimensions never change; see the landscape drawer notes below).
+const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+if (mobileMenuBtn) {
   const mobileSidebar = document.getElementById('sidebar');
-
-  // Shrinks #roomViewport's real height to match the open sheet (CSS var,
-  // see the mobile media query) instead of the sheet floating over a
-  // static-size canvas — the engine's own ResizeObserver reacts to that
-  // and lifts the room's portrait framing to match. resize() is called
-  // explicitly too, belt-and-braces in case the observer misses the last
-  // tick of the transition (same pattern measurely-retail/ecommerce use).
-  function setRoomShift(open) {
-    document.documentElement.style.setProperty('--room-shift-h', open ? '55vh' : '0px');
-    room?.resize?.();
-  }
-
   const mobileQuickBar = document.getElementById('quickAcousticsBar');
-  function setQuickBarVisible(visible) {
-    mobileQuickBar?.classList.toggle('qa-hidden', !visible);
-  }
+  const mobileOverlaysBtn = document.getElementById('mobileOverlaysBtn');
 
-  function closeMobileSheet() {
-    mobileSidebar.classList.remove('mobile-sheet-open');
-    mobileTabBar.querySelectorAll('.mobile-tab-btn').forEach((b) => {
-      b.classList.remove('active');
-      b.setAttribute('aria-selected', 'false');
-    });
-    setRoomShift(false);
-    setQuickBarVisible(true);
-  }
-
-  mobileTabBar.querySelectorAll('.mobile-tab-btn').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      const targetId = btn.getAttribute('data-mobile-tab');
-      const wasOpen = btn.classList.contains('active');
-      closeMobileSheet();
-      if (wasOpen) return; // second tap on the open tab just collapses it
-
-      btn.classList.add('active');
-      btn.setAttribute('aria-selected', 'true');
-      setRoomShift(true);
-      setQuickBarVisible(false);
-      mobileSidebar.classList.add('mobile-sheet-open');
-      document.getElementById(targetId)?.scrollIntoView({ block: 'start' });
-    });
+  // Menu (right drawer) and Overlays (bottom sheet) are mutually
+  // exclusive — opening one closes the other. The Overlays button also
+  // hides while the Menu drawer is open (the drawer covers it).
+  mobileMenuBtn.addEventListener('click', () => {
+    const open = !mobileSidebar.classList.contains('mobile-sheet-open');
+    mobileSidebar.classList.toggle('mobile-sheet-open', open);
+    mobileMenuBtn.setAttribute('aria-expanded', String(open));
+    if (open) {
+      mobileQuickBar?.classList.remove('mobile-sheet-open');
+      mobileOverlaysBtn?.setAttribute('aria-expanded', 'false');
+    }
+    mobileOverlaysBtn?.classList.toggle('qa-hidden', open);
   });
+
+  mobileOverlaysBtn?.addEventListener('click', () => {
+    const open = !mobileQuickBar?.classList.contains('mobile-sheet-open');
+    mobileQuickBar?.classList.toggle('mobile-sheet-open', open);
+    mobileOverlaysBtn.setAttribute('aria-expanded', String(open));
+    if (open) {
+      mobileSidebar.classList.remove('mobile-sheet-open');
+      mobileMenuBtn.setAttribute('aria-expanded', 'false');
+    }
+  });
+
+  // Camera views (Overview/DJ/Dancefloor/Top) live inside the Sound bar
+  // on mobile — as their own floating pill they collide with the logo at
+  // phone widths. DOM move (not CSS clone) so one set of buttons keeps
+  // its listeners; restored to #mainColumn on desktop widths.
+  const cameraViews = document.getElementById('cameraViews');
+  const mainColumn = document.getElementById('mainColumn');
+  const mobileMq = window.matchMedia(
+    '(max-width: 1024px) and (orientation: portrait), (max-width: 1180px) and (orientation: landscape)'
+  );
+  function placeCameraViews() {
+    if (!cameraViews || !mobileQuickBar || !mainColumn) return;
+    if (mobileMq.matches) mobileQuickBar.appendChild(cameraViews);
+    else mainColumn.appendChild(cameraViews);
+  }
+  mobileMq.addEventListener('change', placeCameraViews);
+  placeCameraViews();
 }
 
 // ── Mobile + tablet landscape edge drawers ────────────────────────────────

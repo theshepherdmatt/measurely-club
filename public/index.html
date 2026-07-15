@@ -283,96 +283,161 @@
      had zero responsive handling beyond the pointer:coarse slider tweak
      above; #appShell was a fixed-width flex row that would either
      squash the 3D viewport to nothing or horizontal-scroll on a phone).
-     Same pattern as ecommerce: full-bleed 3D room behind a fixed bottom
-     tab bar, #sidebar becomes a slide-up sheet docked above the tab bar.
-     Simplified from ecommerce's dual #configBar+#sidebar (Wall/Treatment/
-     Room/Acoustics, 4 tabs) to club's single #sidebar (Floor/PA/Booth,
-     3 tabs) — club never had a second panel to split.
+     Full-bleed 3D room; a single floating Menu button (bottom-right)
+     toggles #sidebar as a slide-up sheet. Simplified from the earlier
+     Floor/PA/Booth bottom tab bar — three static buttons ate viewport
+     height for no benefit; the sheet scrolls through all sections.
      Breakpoints widened past ecommerce's phone-only 768/900 to also
      cover tablets (iPad portrait is 768-1024 depending on model,
      landscape up to ~1194 on 12.9" Pro) -- a fixed 320px sidebar still
      crowds the 3D view at those widths.
      ══════════════════════════════════════════════════════════════════ */
-  .mobile-tab-bar { display: none; }
+  .mobile-menu-btn, .mobile-overlays-btn { display: none; }
 
   @media (max-width: 1024px) and (orientation: portrait) {
     html, body { height: 100%; overflow: hidden; }
     #appShell { flex-direction: column; width: 100%; height: 100vh; }
     #mainColumn { flex: 1 1 auto; height: auto; min-height: 0; }
 
-    /* Real height shrinks when the sheet opens (--room-shift-h, set by
-       app.js) instead of the sheet floating over a static-size canvas —
-       the engine's own ResizeObserver reacts to that and lifts the
-       room's portrait framing to match. Same approach as ecommerce. */
-    #roomViewport {
-      height: calc(100% - var(--room-shift-h, 0px));
-      transition: height 0.25s ease;
-    }
-
-    /* Desktop absolute offsets (bottom:32px) get lost above a fixed
-       tab bar on mobile — repositioned, hidden entirely while the
-       sheet is open (nothing left for it to float over). */
+    /* The full overlay row is too long for a phone — it collapses to a
+       bottom sheet that slides up over the room, opened by the single
+       "Overlays" button below. Rows wrap instead of clipping. */
     #quickAcousticsBar {
       display: flex !important;
       position: fixed !important;
-      left: 50% !important;
-      bottom: calc(var(--mobile-tabbar-h) + 12px) !important;
-      transform: translateX(-50%) !important;
-      max-width: calc(100vw - 24px);
-      z-index: 20;
-    }
-    #quickAcousticsBar.qa-hidden { display: none !important; }
-
-    #sidebar {
-      position: fixed;
-      left: 0;
-      right: 0;
-      bottom: var(--mobile-tabbar-h);
-      width: 100%;
-      max-height: 60vh;
-      overflow-y: auto;
-      z-index: 40;
-      transform: translateY(100%);
+      left: 0 !important;
+      right: 0 !important;
+      bottom: 0 !important;
+      transform: translateY(100%) !important;
       transition: transform 0.25s ease;
-      box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.35);
-    }
-    #sidebar.mobile-sheet-open { transform: translateY(0); }
-
-    /* ── Bottom tab bar: Floor / PA / Booth ──
-       Opens the #sidebar sheet and scrolls it to the matching section.
-       Tapping the already-open tab collapses it. */
-    .mobile-tab-bar {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      position: fixed;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      height: var(--mobile-tabbar-h);
-      padding-bottom: env(safe-area-inset-bottom, 0px);
-      background: #000000;
-      border-top: 1px solid rgba(255, 255, 255, 0.1);
-      z-index: 50;
-    }
-    .mobile-tab-btn {
-      display: flex;
+      max-width: none;
       flex-direction: column;
+      gap: 10px;
+      padding: 14px 14px calc(58px + env(safe-area-inset-bottom, 0px));
+      border-radius: 12px 12px 0 0;
+      z-index: 40;
+      /* Translucent over the room rather than a solid black slab. */
+      background: rgba(26, 23, 20, 0.82);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+    }
+    #quickAcousticsBar.mobile-sheet-open { transform: translateY(0) !important; }
+
+    /* Two compact rows: overlays + Crowd/Disco on the first, camera
+       views on the second. display:contents flattens .segmented so its
+       buttons sit in the same row as Crowd/Disco; rows scroll
+       horizontally if they overflow rather than wrap or clip.
+       !important where inline styles must lose. */
+    #quickAcousticsBar .qa-row {
+      display: flex;
+      flex-wrap: nowrap;
+      gap: 6px;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    #quickAcousticsBar .qa-row::-webkit-scrollbar,
+    #quickAcousticsBar #cameraViews::-webkit-scrollbar { display: none; }
+    #quickAcousticsBar #cameraViews { scrollbar-width: none; }
+    #quickAcousticsBar .segmented { display: contents; }
+    #quickAcousticsBar .qa-waves-toggle[style*="width: 1px"] { display: none; }
+    #quickAcousticsBar .seg-btn {
+      /* Stretch to share the row width evenly; rows scroll only when
+         the labels genuinely can't fit. */
+      flex: 1 0 auto;
+      padding: 9px 10px !important;
+      background: transparent;
+      border: 1px solid var(--viewport-border);
+      border-radius: 6px !important;
+    }
+    #quickAcousticsBar .seg-btn.active { border-color: var(--viewport-text); background: var(--viewport-text); }
+
+    /* ── Single "Overlays" button, bottom-centre ──
+       Toggles the sheet above; stays on top of it (z 50 vs 40) so the
+       same button closes it. Hidden while the Menu drawer is open. */
+    .mobile-overlays-btn {
+      display: flex;
       align-items: center;
       justify-content: center;
-      gap: 3px;
-      background: transparent;
-      border: none;
-      padding: 0;
-      color: rgba(255, 255, 255, 0.5);
+      position: fixed;
+      left: 50%;
+      bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+      transform: translateX(-50%);
+      z-index: 50;
+      background: #000000;
+      color: #FFFFFF;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 8px;
+      padding: 10px 18px;
       font-family: inherit;
-      font-size: 10px;
+      font-size: 10.5px;
       font-weight: 700;
       letter-spacing: 0.4px;
       text-transform: uppercase;
       cursor: pointer;
     }
-    .mobile-tab-btn svg { width: 18px; height: 18px; }
-    .mobile-tab-btn.active { color: #FFFFFF; }
+    .mobile-overlays-btn.qa-hidden { display: none; }
+
+    /* Camera views (Overview/DJ/Dancefloor/Top) are moved INTO the
+       Sound bar by app.js on mobile — their own floating pill collides
+       with the logo at phone widths. Second row, separated by a rule. */
+    #quickAcousticsBar #cameraViews {
+      position: static;
+      display: flex;
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      gap: 6px;
+      background: transparent;
+      border: none;
+      border-radius: 0;
+      border-top: 1px solid var(--viewport-border);
+      padding: 10px 0 0;
+      margin-top: 0;
+    }
+    #quickAcousticsBar #cameraViews .seg-btn { flex: 1 0 auto; padding: 9px 10px !important; }
+
+    /* Sidebar slides in from the RIGHT as a drawer (was a bottom
+       sheet) — slides over the room via transform, so the canvas
+       never resizes and the camera framing holds steady. */
+    #sidebar {
+      position: fixed;
+      top: 0;
+      right: 0;
+      left: auto;
+      bottom: 0;
+      width: min(85vw, 320px);
+      height: 100%;
+      max-height: none;
+      overflow-y: auto;
+      z-index: 40;
+      transform: translateX(100%);
+      transition: transform 0.25s ease;
+      box-shadow: -8px 0 24px rgba(0, 0, 0, 0.35);
+      padding-bottom: calc(28px + env(safe-area-inset-bottom, 0px));
+    }
+    #sidebar.mobile-sheet-open { transform: translateX(0); }
+
+    /* ── Hamburger, top-right ──
+       Toggles the #sidebar drawer. Sits above it (z 50 vs 40) so the
+       same button closes it. */
+    .mobile-menu-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: fixed;
+      top: calc(12px + env(safe-area-inset-top, 0px));
+      right: 12px;
+      width: 40px;
+      height: 40px;
+      z-index: 50;
+      background: #000000;
+      color: #FFFFFF;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 8px;
+      padding: 0;
+      cursor: pointer;
+    }
+    .mobile-menu-btn svg { width: 18px; height: 18px; }
+    .mobile-menu-btn span { display: none; }
   }
 
   /* Landscape-only elements — hidden outside the landscape media query. */
@@ -443,7 +508,20 @@
     }
     #quickAcousticsBar.mobile-sheet-open { transform: translateX(0) !important; }
     #quickAcousticsBar .segmented { flex-direction: column; }
-    #quickAcousticsBar #cameraViews { flex-direction: column; }
+    /* Camera views are moved INTO this drawer by app.js on mobile —
+       flattened from their floating top-right pill into a stacked row
+       (position:static, or the base absolute rule floats them over the
+       drawer's own buttons). */
+    #quickAcousticsBar #cameraViews {
+      position: static;
+      flex-direction: column;
+      background: transparent;
+      border: none;
+      border-radius: 0;
+      border-top: 1px solid var(--viewport-border);
+      padding: 6px 0 0;
+      margin-top: 6px;
+    }
     #quickAcousticsBar .qa-row { flex-direction: column; }
     #quickAcousticsBar .qa-row + .qa-row { border-top: 1px solid var(--viewport-border); padding-top: 6px; margin-top: 6px; }
     #quickAcousticsBar .qa-row-label { padding: 4px 8px; }
@@ -531,17 +609,6 @@
 
     <img id="clubLogo" src="./assets/lisle-acoustics-logo.svg" alt="Lisle Acoustics" style="position: absolute; top: 20px; left: 24px; z-index: 10; height: 56px; width: auto; pointer-events: none;">
 
-    <div id="waveKey" style="position: absolute; top: 80px; left: 32px; z-index: 10; background: var(--configbar-bg); padding: 12px 16px; border: 1px solid var(--viewport-border); color: var(--viewport-text-muted); font-size: 11px; font-weight: 500; display: flex; flex-direction: column; gap: 8px; border-radius: 4px;">
-      <div style="display: flex; align-items: center; gap: 8px;">
-        <div style="width: 12px; height: 12px; border-radius: 50%; border: 2px solid var(--brand-accent);"></div>
-        <span>Mid/High Freqs (80Hz - 20kHz)</span>
-      </div>
-      <div style="display: flex; align-items: center; gap: 8px;">
-        <div style="width: 12px; height: 12px; border-radius: 50%; border: 2px solid #ff2d78;"></div>
-        <span>Low/Sub Freqs (20Hz - 80Hz)</span>
-      </div>
-    </div>
-    
     <div id="quickAcousticsBar">
       <div class="qa-row">
         <div class="segmented" id="quickAcousticsSegmented" style="background: transparent; border: none;">
@@ -563,7 +630,7 @@
          Sound bar below. -->
     <div id="cameraViews">
       <button type="button" class="seg-btn active" data-view="overview">Overview</button>
-      <button type="button" class="seg-btn" data-view="dj">DJ</button>
+      <button type="button" class="seg-btn" data-view="dj">DJ Booth</button>
       <button type="button" class="seg-btn" data-view="floor">Dancefloor</button>
       <button type="button" class="seg-btn" data-view="top">Top</button>
     </div>
@@ -585,24 +652,18 @@
   </div>
 </div>
 
-<!-- ── Mobile bottom tab bar (<=768px portrait only) ──
-     Opens the #sidebar slide-up sheet and scrolls to the matching
-     section — see the mobile media query above and the wiring in
-     app.js. Hidden on desktop via .mobile-tab-bar's default display:none. -->
-<nav class="mobile-tab-bar" id="mobileTabBar" role="tablist" aria-label="Room sections">
-  <button type="button" class="mobile-tab-btn" data-mobile-tab="sectionFloor" role="tab" aria-selected="false">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="1"/><path d="M3 10h18"/></svg>
-    <span>Floor</span>
-  </button>
-  <button type="button" class="mobile-tab-btn" data-mobile-tab="sectionPA" role="tab" aria-selected="false">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12c2-4 4-4 6 0s4 4 6 0 4-4 6 0"/></svg>
-    <span>PA</span>
-  </button>
-  <button type="button" class="mobile-tab-btn" data-mobile-tab="sectionBooth" role="tab" aria-selected="false">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="8" width="18" height="10" rx="1"/><circle cx="8" cy="13" r="2"/><circle cx="16" cy="13" r="2"/></svg>
-    <span>Booth</span>
-  </button>
-</nav>
+<!-- ── Mobile portrait only: top-right hamburger ──
+     Replaces the earlier Floor/PA/Booth bottom tab bar. Toggles the
+     whole #sidebar as a right-edge drawer; the drawer scrolls through
+     all three sections. See the portrait media query above and the
+     wiring in app.js. -->
+<button type="button" class="mobile-menu-btn" id="mobileMenuBtn" aria-expanded="false" aria-controls="sidebar" aria-label="Menu">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+  <span>Menu</span>
+</button>
+<!-- Portrait only: opens the overlay controls (Sound + camera views,
+     #quickAcousticsBar) as a slide-up bottom sheet. -->
+<button type="button" class="mobile-overlays-btn" id="mobileOverlaysBtn" aria-expanded="false" aria-controls="quickAcousticsBar">Overlays</button>
 
 <!-- ── Mobile LANDSCAPE only: edge drawer handles ──
      Dual handles matching ecommerce's Wall(left)+Room(right) pattern:
@@ -615,6 +676,6 @@
 <button type="button" class="landscape-edge-handle landscape-edge-handle-left" id="landscapeOverlaysHandle" aria-label="Acoustic overlays">Overlays</button>
 <button type="button" class="landscape-edge-handle landscape-edge-handle-right" id="landscapeSidebarHandle" aria-label="Room settings">Menu</button>
 
-<script type="module" src="./app.js?v=27"></script>
+<script type="module" src="./app.js?v=30"></script>
 </body>
 </html>
