@@ -19,7 +19,7 @@ const state = {
     // Two tops flanking the booth — coverage-driven, not imaging-driven.
     speaker_type: 'pa_top',
     spk_spacing_m: 6,
-    spk_front_m: 1.0,
+    spk_front_m: 0.5,
     tweeter_height_m: 2.2,
     // Modest toe-in for coverage evenness across a wide floor — not a
     // hi-fi stereo triangle angle.
