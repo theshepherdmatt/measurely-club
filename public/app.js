@@ -1,4 +1,4 @@
-import { initRoom3D, OVERLAY_META } from './engine/js/room3d.js?v=61';
+import { initRoom3D, OVERLAY_META } from './engine/js/room3d.js?v=64';
 
 // Plain state object: the single source of truth for the room viewport.
 // getRoomData() below reads straight from this on every rebuild.
@@ -46,6 +46,8 @@ const state = {
   // pa_top wall-bracket mount height (permanent install). Tilt is derived
   // automatically in the engine — aimed at ear height on the dance floor.
   pa_mount_height_m: 3.0,
+  // 'wall' (bracket install) or 'tripod' (portable poles-on-stands rig).
+  pa_mount: 'wall',
   // Dance floor capacity limit
   crowd_limit: 200,
   floor_material: 'hard',
@@ -71,6 +73,7 @@ function getRoomData() {
     booth_front_m: state.booth_front_m,
     booth_offset_m: state.booth_offset_m,
     pa_mount_height_m: state.pa_mount_height_m,
+    pa_mount: state.pa_mount,
     crowd_limit: state.crowd_limit,
     rear_pa: state.rear_pa,
     deck_config: state.deck_config,
@@ -95,7 +98,18 @@ function floorAreaM2() {
   return state.geometry.width_m * state.geometry.length_m;
 }
 
-const clubAPI = SCL?.renderClubSection('clubMount', {
+// Sections are rendered through one function so venue presets can
+// re-render the whole sidebar from mutated state (SCL renderers append
+// into their mounts — the mounts are cleared first on re-render).
+let clubAPI, speakersAPI, boothAPI;
+
+function renderSidebarSections() {
+  for (const id of ['clubMount', 'roomMount', 'clubSpeakersMount', 'clubBoothMount']) {
+    const el = document.getElementById(id);
+    if (el) el.innerHTML = '';
+  }
+
+  clubAPI = SCL?.renderClubSection('clubMount', {
   state: {
     crowd_limit: state.crowd_limit,
     area_m2: floorAreaM2(),
@@ -107,10 +121,11 @@ const clubAPI = SCL?.renderClubSection('clubMount', {
   },
 });
 
-const speakersAPI = SCL?.renderClubSpeakersSection('clubSpeakersMount', {
+  speakersAPI = SCL?.renderClubSpeakersSection('clubSpeakersMount', {
   state: {
     spk_spacing_m: state.setup.spk_spacing_m,
     pa_mount_height_m: state.pa_mount_height_m,
+    pa_mount: state.pa_mount,
     toe_in_deg: state.setup.toe_in_deg,
     rear_pa: state.rear_pa,
     bass_bin_placement: state.bass_bin_placement,
@@ -120,9 +135,10 @@ const speakersAPI = SCL?.renderClubSpeakersSection('clubSpeakersMount', {
     length_m: state.geometry.length_m,
     crowd_limit: state.crowd_limit,
   },
-  onChange({ spk_spacing_m, pa_mount_height_m, toe_in_deg, rear_pa, bass_bin_placement, bass_bin_count, spk_front_m }) {
+  onChange({ spk_spacing_m, pa_mount_height_m, pa_mount, toe_in_deg, rear_pa, bass_bin_placement, bass_bin_count, spk_front_m }) {
     state.setup.spk_spacing_m = spk_spacing_m;
     state.pa_mount_height_m = pa_mount_height_m;
+    state.pa_mount = pa_mount;
     state.setup.toe_in_deg = toe_in_deg;
     state.rear_pa = rear_pa;
     state.bass_bin_placement = bass_bin_placement;
@@ -131,6 +147,54 @@ const speakersAPI = SCL?.renderClubSpeakersSection('clubSpeakersMount', {
     room?.update?.();
   },
 });
+
+  boothAPI = SCL?.renderClubBoothSection('clubBoothMount', {
+    state: {
+      deck_config: state.deck_config,
+      dj_riser_enabled: state.dj_riser_enabled,
+      booth_front_m: state.booth_front_m,
+      booth_offset_m: state.booth_offset_m,
+    },
+    maxBoothFront: maxBoothFrontFor(state.geometry.length_m),
+    onChange({ deck_config, dj_riser_enabled, booth_front_m, booth_offset_m }) {
+      state.deck_config = deck_config;
+      state.dj_riser_enabled = dj_riser_enabled;
+      state.booth_front_m = booth_front_m;
+      state.booth_offset_m = booth_offset_m;
+      room?.update?.();
+    },
+  });
+
+  SCL?.renderRoomSection('roomMount', {
+    state: {
+      width_m: state.geometry.width_m,
+      length_m: state.geometry.length_m,
+      height_m: state.geometry.height_m,
+    },
+    // Hi-fi-room defaults (length max 10m) don't fit a club floor.
+    ranges: {
+      width_m:  { min: 4, max: 25, step: 0.5 },
+      length_m: { min: 5, max: 30, step: 0.5 },
+      height_m: { min: 2.5, max: 8, step: 0.1 },
+    },
+    onChange({ width_m, length_m, height_m }) {
+      const prevW = state.geometry.width_m;
+      const prevL = state.geometry.length_m;
+      const prevH = state.geometry.height_m;
+      state.geometry.width_m = width_m;
+      state.geometry.length_m = length_m;
+      state.geometry.height_m = height_m;
+      if (width_m !== prevW) room?.setRoomWidth?.(width_m);
+      if (length_m !== prevL) room?.setRoomLength?.(length_m);
+      if (height_m !== prevH) room?.setRoomHeight?.(height_m);
+      _centreListener();
+      room?.update?.();
+      clubAPI?.setArea?.(floorAreaM2());
+      boothAPI?.setMaxBoothFront?.(maxBoothFrontFor(length_m));
+      speakersAPI?.setRoomContext?.(width_m, length_m, state.crowd_limit);
+    },
+  });
+}
 
 // booth_front_m is multiplied by the booth's own internal footprint
 // scale (BOOTH_FOOTPRINT_SCALE = 0.42 in room3d.js -- not exposed, so
@@ -149,51 +213,63 @@ function maxBoothFrontFor(lengthM) {
   return Math.max(2.5, (lengthM - riserHalfDepthM - BOOTH_BACK_WALL_MARGIN_M) / BOOTH_FOOTPRINT_SCALE);
 }
 
-const boothAPI = SCL?.renderClubBoothSection('clubBoothMount', {
-  state: {
-    deck_config: state.deck_config,
-    dj_riser_enabled: state.dj_riser_enabled,
-    booth_front_m: state.booth_front_m,
-    booth_offset_m: state.booth_offset_m,
-  },
-  maxBoothFront: maxBoothFrontFor(state.geometry.length_m),
-  onChange({ deck_config, dj_riser_enabled, booth_front_m, booth_offset_m }) {
-    state.deck_config = deck_config;
-    state.dj_riser_enabled = dj_riser_enabled;
-    state.booth_front_m = booth_front_m;
-    state.booth_offset_m = booth_offset_m;
-    room?.update?.();
-  },
-});
+renderSidebarSections();
 
-SCL?.renderRoomSection('roomMount', {
-  state: {
-    width_m: state.geometry.width_m,
-    length_m: state.geometry.length_m,
-    height_m: state.geometry.height_m,
+// ── Venue size presets ─────────────────────────────────────────────────────
+// One-tap starting points sized by capacity. Small venues get the
+// portable tripod rig; bigger rooms get the permanent wall install with
+// more bass bins (and rear fill tops at the top end). Values are
+// starting points for the installer to tune, not prescriptions.
+const VENUE_PRESETS = {
+  small: {  // intimate bar, 50–100 people
+    geometry: { width_m: 6, length_m: 8, height_m: 3.0 },
+    crowd_limit: 80,
+    pa: { spk_spacing_m: 4.0, pa_mount_height_m: 2.2, pa_mount: 'tripod', toe_in_deg: 10,
+          rear_pa: false, bass_bin_placement: ['centre'], bass_bin_count: 2, spk_front_m: 0.5 },
   },
-  // Hi-fi-room defaults (length max 10m) don't fit a club floor.
-  ranges: {
-    width_m:  { min: 4, max: 25, step: 0.5 },
-    length_m: { min: 5, max: 30, step: 0.5 },
-    height_m: { min: 2.5, max: 8, step: 0.1 },
+  medium: { // club floor, 100–250 people
+    geometry: { width_m: 10, length_m: 12, height_m: 3.5 },
+    crowd_limit: 180,
+    pa: { spk_spacing_m: 6.0, pa_mount_height_m: 3.0, pa_mount: 'wall', toe_in_deg: 10,
+          rear_pa: false, bass_bin_placement: ['centre'], bass_bin_count: 3, spk_front_m: 1.0 },
   },
-  onChange({ width_m, length_m, height_m }) {
-    const prevW = state.geometry.width_m;
-    const prevL = state.geometry.length_m;
-    const prevH = state.geometry.height_m;
-    state.geometry.width_m = width_m;
-    state.geometry.length_m = length_m;
-    state.geometry.height_m = height_m;
-    if (width_m !== prevW) room?.setRoomWidth?.(width_m);
-    if (length_m !== prevL) room?.setRoomLength?.(length_m);
-    if (height_m !== prevH) room?.setRoomHeight?.(height_m);
-    _centreListener();
-    room?.update?.();
-    clubAPI?.setArea?.(floorAreaM2());
-    boothAPI?.setMaxBoothFront?.(maxBoothFrontFor(length_m));
-    speakersAPI?.setRoomContext?.(width_m, length_m, state.crowd_limit);
+  large: {  // large venue, 250–500 people
+    geometry: { width_m: 14, length_m: 18, height_m: 4.5 },
+    crowd_limit: 400,
+    pa: { spk_spacing_m: 8.0, pa_mount_height_m: 3.5, pa_mount: 'wall', toe_in_deg: 12,
+          rear_pa: true, bass_bin_placement: ['centre', 'corners'], bass_bin_count: 4, spk_front_m: 1.0 },
   },
+};
+
+function applyVenuePreset(key) {
+  const preset = VENUE_PRESETS[key];
+  if (!preset) return;
+  Object.assign(state.geometry, preset.geometry);
+  state.crowd_limit = preset.crowd_limit;
+  state.setup.spk_spacing_m = preset.pa.spk_spacing_m;
+  state.setup.toe_in_deg = preset.pa.toe_in_deg;
+  state.setup.spk_front_m = preset.pa.spk_front_m;
+  state.pa_mount_height_m = preset.pa.pa_mount_height_m;
+  state.pa_mount = preset.pa.pa_mount;
+  state.rear_pa = preset.pa.rear_pa;
+  state.bass_bin_placement = [...preset.pa.bass_bin_placement];
+  state.bass_bin_count = preset.pa.bass_bin_count;
+  _centreListener();
+  room?.setRoomWidth?.(state.geometry.width_m);
+  room?.setRoomLength?.(state.geometry.length_m);
+  room?.setRoomHeight?.(state.geometry.height_m);
+  renderSidebarSections();
+  room?.update?.();
+  room?.frameRoom?.({ animate: true, duration: 1400 });
+}
+
+const presetBtns = document.querySelectorAll('#venuePresets .sbox-btn');
+presetBtns.forEach(btn => {
+  btn.addEventListener('click', () => {
+    presetBtns.forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    applyVenuePreset(btn.dataset.preset);
+  });
 });
 
 // Floating quick acoustics bar bindings

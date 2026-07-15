@@ -124,6 +124,10 @@
     transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
   }
   .sbox-btn:hover { background: #F7F5F2; border-color: var(--ink-muted); }
+  /* Venue preset buttons: capacity range as a quiet second line. */
+  #venuePresets .sbox-btn { flex-direction: column; gap: 1px; padding-top: 8px; padding-bottom: 8px; }
+  .preset-cap { font-size: 9.5px; font-weight: 500; color: var(--ink-muted); }
+  #venuePresets .sbox-btn.active .preset-cap { color: rgba(250, 250, 248, 0.7); }
   .sbox-btn.active {
     background: var(--ink);
     color: #FAFAF8;
@@ -599,7 +603,7 @@
 <script src="./engine/js/engine/materials/surfaces.js?v=13"></script>
 <script src="./engine/js/engine/imageSource.js"></script>
 <script src="./engine/js/engine/acoustics.js?v=13"></script>
-<script src="./engine/js/sidebar-component-library.js?v=20"></script>
+<script src="./engine/js/sidebar-component-library.js?v=21"></script>
 </head>
 <body>
 
@@ -637,6 +641,15 @@
   </div>
   <div id="sidebar">
     <div class="club-section" id="sectionFloor">
+      <div class="club-group-label">Venue size</div>
+      <!-- One-tap starting points by capacity — see VENUE_PRESETS in
+           app.js. Small = portable tripod rig; large = wall install,
+           rear fill and corner bins. -->
+      <div class="demo-btn-row" id="venuePresets" style="margin-bottom: 22px;">
+        <button type="button" class="sbox-btn" data-preset="small" title="Intimate bar — tripod rig">Small<span class="preset-cap">50–100</span></button>
+        <button type="button" class="sbox-btn" data-preset="medium" title="Club floor — wall install">Medium<span class="preset-cap">100–250</span></button>
+        <button type="button" class="sbox-btn" data-preset="large" title="Large venue — 4-point PA, corner bins">Large<span class="preset-cap">250–500</span></button>
+      </div>
       <div class="club-group-label">Venue dimensions</div>
       <div id="roomMount"></div>
       <div id="clubMount" style="margin-top: 16px;"></div>
@@ -676,6 +689,6 @@
 <button type="button" class="landscape-edge-handle landscape-edge-handle-left" id="landscapeOverlaysHandle" aria-label="Acoustic overlays">Overlays</button>
 <button type="button" class="landscape-edge-handle landscape-edge-handle-right" id="landscapeSidebarHandle" aria-label="Room settings">Menu</button>
 
-<script type="module" src="./app.js?v=30"></script>
+<script type="module" src="./app.js?v=31"></script>
 </body>
 </html>
