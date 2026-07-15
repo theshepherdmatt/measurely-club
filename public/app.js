@@ -1,4 +1,4 @@
-import { initRoom3D, OVERLAY_META } from './engine/js/room3d.js?v=58';
+import { initRoom3D, OVERLAY_META } from './engine/js/room3d.js?v=59';
 
 // Plain state object: the single source of truth for the room viewport.
 // getRoomData() below reads straight from this on every rebuild.
@@ -35,7 +35,8 @@ const state = {
   // avoids power-alley cancellation across the floor.
   bass_bin_count: 2,
   // 'centre' (under the booth) or 'corners' (split to both front corners).
-  bass_bin_placement: 'centre',
+  // Multi-select array — placements combine ('centre' + 'rear_corners' etc.)
+  bass_bin_placement: ['centre'],
   // DJ booth distance from the front wall (cable-run clearance).
   booth_front_m: 2.0,
   // Booth left/right offset from room centre — moves the booth and (in

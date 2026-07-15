@@ -33,7 +33,7 @@
     height: 100%;
     background: #ffffff;
     overflow-y: auto;
-    padding: 24px 20px;
+    padding: 28px 24px;
     box-sizing: border-box;
   }
   .club-group-label {
@@ -42,9 +42,24 @@
     text-transform: uppercase;
     letter-spacing: 1px;
     color: #aaaaaa;
-    margin: 0 0 12px;
+    margin: 0 0 14px;
   }
-  .club-section { margin-bottom: 28px; }
+  /* Symmetric section dividers: the rule floats between two sections
+     with equal breathing room on both sides (measurely-ui divider
+     pattern), instead of sections just stacking with a bottom margin. */
+  .club-section { padding: 22px 0; }
+  .club-section + .club-section { border-top: 1px solid #E8E8E8; }
+  #sidebar > .club-section:first-child { padding-top: 0; }
+  #sidebar > .club-section:last-child { padding-bottom: 0; }
+
+  /* Button rows fill the panel width as an even grid — every segmented
+     row aligns to the same right edge as the sliders instead of ragged
+     natural-width buttons. */
+  #sidebar .demo-btn-row { display: flex; gap: 5px; }
+  #sidebar .demo-btn-row .sbox-btn { flex: 1 1 0; padding-left: 0; padding-right: 0; }
+
+  /* Numeric slider values line up as digits change */
+  #sidebar .demo-field-value { font-variant-numeric: tabular-nums; }
 
   /* SCL's shared .sbox-btn (Rear PA on/off, density/capacity toggles) ships
      with a rounded teal-outline "active" state (sidebar-controls.css) —
@@ -453,7 +468,7 @@
 <script src="./engine/js/engine/materials/surfaces.js?v=13"></script>
 <script src="./engine/js/engine/imageSource.js"></script>
 <script src="./engine/js/engine/acoustics.js?v=13"></script>
-<script src="./engine/js/sidebar-component-library.js?v=19"></script>
+<script src="./engine/js/sidebar-component-library.js?v=20"></script>
 </head>
 <body>
 
@@ -548,6 +563,6 @@
 <button type="button" class="landscape-edge-handle landscape-edge-handle-left" id="landscapeOverlaysHandle" aria-label="Acoustic overlays">Overlays</button>
 <button type="button" class="landscape-edge-handle landscape-edge-handle-right" id="landscapeSidebarHandle" aria-label="Room settings">Menu</button>
 
-<script type="module" src="./app.js?v=25"></script>
+<script type="module" src="./app.js?v=26"></script>
 </body>
 </html>
