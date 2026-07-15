@@ -146,7 +146,7 @@
     color: var(--viewport-text-muted);
     background: var(--configbar-bg);
     border: none;
-    border-radius: 0;
+    border-radius: 4px;
     padding: 6px 16px;
     cursor: pointer;
     text-align: center;
@@ -161,8 +161,9 @@
     transform: translateX(-50%);
     z-index: 10;
     background: var(--configbar-bg);
-    padding: 3px;
+    padding: 4px;
     border: 1px solid var(--viewport-border);
+    border-radius: 8px;
     display: flex;
     flex-direction: column;
     gap: 3px;
@@ -195,7 +196,8 @@
     gap: 3px;
     background: var(--configbar-bg);
     border: 1px solid var(--viewport-border);
-    padding: 3px;
+    border-radius: 8px;
+    padding: 4px;
   }
   #cameraViews .seg-btn {
     padding: 5px 12px;
@@ -542,7 +544,6 @@
     
     <div id="quickAcousticsBar">
       <div class="qa-row">
-        <span class="qa-row-label">Sound</span>
         <div class="segmented" id="quickAcousticsSegmented" style="background: transparent; border: none;">
           <button type="button" class="seg-btn active" data-overlay="none" style="padding: 6px 16px; white-space: nowrap;">None</button>
           <button type="button" class="seg-btn" data-overlay="side_reflections" style="padding: 6px 16px; white-space: nowrap;">Reflections</button>
@@ -614,6 +615,6 @@
 <button type="button" class="landscape-edge-handle landscape-edge-handle-left" id="landscapeOverlaysHandle" aria-label="Acoustic overlays">Overlays</button>
 <button type="button" class="landscape-edge-handle landscape-edge-handle-right" id="landscapeSidebarHandle" aria-label="Room settings">Menu</button>
 
-<script type="module" src="./app.js?v=26"></script>
+<script type="module" src="./app.js?v=27"></script>
 </body>
 </html>
