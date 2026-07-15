@@ -209,6 +209,40 @@
     white-space: nowrap;
   }
 
+  /* Live dance-floor coverage badge — sits under the logo, top-left.
+     Hidden until app.js has a real reading (avoids a flash of "—" on
+     load); colour ramps teal -> gold -> pink to match the crowd
+     heatmap's own palette, so the badge and the floor agree visually. */
+  .coverage-badge {
+    position: absolute;
+    top: 20px;
+    left: 24px;
+    z-index: 10;
+    display: none;
+    flex-direction: column;
+    gap: 2px;
+    background: var(--configbar-bg);
+    border: 1px solid var(--viewport-border);
+    border-radius: 8px;
+    padding: 8px 14px;
+    pointer-events: none;
+  }
+  .coverage-badge.ready { display: flex; }
+  .coverage-label {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    color: var(--viewport-text-muted);
+  }
+  .coverage-pct {
+    font-size: 20px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: #22d3c5; /* matches the crowd heatmap's cool anchor colour */
+    transition: color 0.3s ease;
+  }
+
   /* Anthill flat UI overrides for engine components */
   select.measurely-select {
     width: 100%;
@@ -611,7 +645,15 @@
   <div id="mainColumn" style="position: relative; flex: 1 1 auto; min-width: 0; height: 100%;">
     <div id="roomViewport" style="position: absolute; inset: 0;"></div>
 
-    <img id="clubLogo" src="./assets/lisle-acoustics-logo.svg" alt="Lisle Acoustics" style="position: absolute; top: 20px; left: 24px; z-index: 10; height: 56px; width: auto; pointer-events: none;">
+    <!-- Live dance-floor coverage: % of crowd instances at/above the
+         ~102 dB "red" band on the heatmap (room3d.js getCrowdCoverage()).
+         Rises as tops/bins are added, falls as the rig is thinned out —
+         wired in app.js after every room.update(). Hidden until the
+         first crowd render populates it (see .coverage-badge.ready). -->
+    <div id="coverageBadge" class="coverage-badge">
+      <span class="coverage-label">Floor Coverage</span>
+      <span class="coverage-pct" id="coveragePct">—</span>
+    </div>
 
     <div id="quickAcousticsBar">
       <div class="qa-row">
@@ -689,6 +731,6 @@
 <button type="button" class="landscape-edge-handle landscape-edge-handle-left" id="landscapeOverlaysHandle" aria-label="Acoustic overlays">Overlays</button>
 <button type="button" class="landscape-edge-handle landscape-edge-handle-right" id="landscapeSidebarHandle" aria-label="Room settings">Menu</button>
 
-<script type="module" src="./app.js?v=31"></script>
+<script type="module" src="./app.js?v=32"></script>
 </body>
 </html>

@@ -1,4 +1,4 @@
-import { initRoom3D, OVERLAY_META } from './engine/js/room3d.js?v=64';
+import { initRoom3D, OVERLAY_META } from './engine/js/room3d.js?v=65';
 
 // Plain state object: the single source of truth for the room viewport.
 // getRoomData() below reads straight from this on every rebuild.
@@ -90,6 +90,38 @@ const room = initRoom3D({ mountId: 'roomViewport', getRoomData, mode: 'setup', s
 room?.frameRoom?.();
 room?.resize?.();
 window.addEventListener('resize', () => room?.resize?.());
+
+// ── Live dance-floor coverage badge ─────────────────────────────────────
+// getCrowdCoverage() reflects whatever the last rebuild() computed, so
+// wrapping room.update() once here (rather than adding a refresh call to
+// every onChange handler that calls it) keeps the badge in sync with
+// every sidebar/PA change automatically.
+const coverageBadge = document.getElementById('coverageBadge');
+const coveragePct = document.getElementById('coveragePct');
+function refreshCoverageBadge() {
+  const coverage = room?.getCrowdCoverage?.();
+  if (!coverage || !coverage.count) return;
+  const pct = Math.round(coverage.pct * 100);
+  coveragePct.textContent = pct + '%';
+  // Same teal -> gold -> pink ramp as the crowd heatmap itself.
+  const colTeal = [0x22, 0xd3, 0xc5], colGold = [0xff, 0xd1, 0x66], colPink = [0xff, 0x2d, 0x78];
+  const lerp = (a, b, t) => Math.round(a + (b - a) * t);
+  const mix = (t) => {
+    const [from, to, localT] = t < 0.5 ? [colTeal, colGold, t * 2] : [colGold, colPink, (t - 0.5) * 2];
+    return `rgb(${lerp(from[0], to[0], localT)}, ${lerp(from[1], to[1], localT)}, ${lerp(from[2], to[2], localT)})`;
+  };
+  coveragePct.style.color = mix(coverage.pct);
+  coverageBadge.classList.add('ready');
+}
+if (room?.update) {
+  const _rawRoomUpdate = room.update.bind(room);
+  room.update = (...args) => {
+    const result = _rawRoomUpdate(...args);
+    refreshCoverageBadge();
+    return result;
+  };
+}
+refreshCoverageBadge();
 
 // ── Sidebar (SCL) ─────────────────────────────────────────────────────────
 const SCL = window.MeasurelySCL;
@@ -224,18 +256,24 @@ const VENUE_PRESETS = {
   small: {  // intimate bar, 50–100 people
     geometry: { width_m: 6, length_m: 8, height_m: 3.0 },
     crowd_limit: 80,
+    // 2 decks (CDJ pair), not the 4-deck (2 turntables + 2 CDJ) desk —
+    // a 4-deck booth is oversized furniture for a small bar floor.
+    // Installer can still switch it up manually if the client wants more.
+    deck_config: 'cdj',
     pa: { spk_spacing_m: 4.0, pa_mount_height_m: 2.2, pa_mount: 'tripod', toe_in_deg: 10,
           rear_pa: false, bass_bin_placement: ['centre'], bass_bin_count: 2, spk_front_m: 0.5 },
   },
   medium: { // club floor, 100–250 people
     geometry: { width_m: 10, length_m: 12, height_m: 3.5 },
     crowd_limit: 180,
+    deck_config: 'both',
     pa: { spk_spacing_m: 6.0, pa_mount_height_m: 3.0, pa_mount: 'wall', toe_in_deg: 10,
           rear_pa: false, bass_bin_placement: ['centre'], bass_bin_count: 3, spk_front_m: 1.0 },
   },
   large: {  // large venue, 250–500 people
     geometry: { width_m: 14, length_m: 18, height_m: 4.5 },
     crowd_limit: 400,
+    deck_config: 'both',
     pa: { spk_spacing_m: 8.0, pa_mount_height_m: 3.5, pa_mount: 'wall', toe_in_deg: 12,
           rear_pa: true, bass_bin_placement: ['centre', 'corners'], bass_bin_count: 4, spk_front_m: 1.0 },
   },
@@ -254,6 +292,7 @@ function applyVenuePreset(key) {
   state.rear_pa = preset.pa.rear_pa;
   state.bass_bin_placement = [...preset.pa.bass_bin_placement];
   state.bass_bin_count = preset.pa.bass_bin_count;
+  state.deck_config = preset.deck_config;
   _centreListener();
   room?.setRoomWidth?.(state.geometry.width_m);
   room?.setRoomLength?.(state.geometry.length_m);
