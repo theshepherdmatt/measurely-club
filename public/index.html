@@ -21,7 +21,12 @@
     --viewport-surface-hover: rgba(255, 255, 255, 0.1);
     --viewport-text: #FAFAFA;
     --control-bg:  #F2F2F2;
-    --text-primary:  #1A1A1A;
+    /* Warm off-black ink, related to --configbar-bg #1A1714 — nothing in
+       the sidebar uses hard #000/#1A1A1A black. */
+    --ink:        #2A2622;
+    --ink-muted:  #8C8781;
+    --line:       #E5E2DD;
+    --text-primary: #2A2622;
     --mobile-tabbar-h: 56px;
   }
   html, body { margin: 0; height: 100%; background: var(--viewport-bg); font-family: 'DM Sans', system-ui, sans-serif; }
@@ -48,7 +53,7 @@
      with equal breathing room on both sides (measurely-ui divider
      pattern), instead of sections just stacking with a bottom margin. */
   .club-section { padding: 22px 0; }
-  .club-section + .club-section { border-top: 1px solid #E8E8E8; }
+  .club-section + .club-section { border-top: 1px solid var(--line); }
   #sidebar > .club-section:first-child { padding-top: 0; }
   #sidebar > .club-section:last-child { padding-bottom: 0; }
 
@@ -58,8 +63,43 @@
   #sidebar .demo-btn-row { display: flex; gap: 5px; }
   #sidebar .demo-btn-row .sbox-btn { flex: 1 1 0; padding-left: 0; padding-right: 0; }
 
-  /* Numeric slider values line up as digits change */
-  #sidebar .demo-field-value { font-variant-numeric: tabular-nums; }
+  /* ── Sidebar type scale ──────────────────────────────────────────────
+     One quiet scale instead of the engine defaults' mixed sizes:
+       10px  uppercase group labels (existing)
+       12.5px field labels + values (values medium-bold, tabular)
+       11px  buttons (uppercase-free, calm)
+     Ink is warm off-black throughout — no hard black anywhere. */
+  #sidebar { color: var(--ink); }
+  #sidebar .demo-field-label {
+    font-size: 12.5px;
+    font-weight: 500;
+    color: var(--ink);
+  }
+  #sidebar .demo-field-value {
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--ink);
+    font-variant-numeric: tabular-nums;
+  }
+  /* PA Estimate readout box — SCL authors this with inline styles, so
+     the overrides need !important to land. Same scale as everything
+     else: 10px spaced label, 12px body, soft warm border. */
+  #sidebar #clubSpeakersMount > div > div:first-child {
+    background: #FAF9F7 !important;
+    border: 1px solid var(--line) !important;
+    border-radius: 6px;
+    padding: 12px 14px !important;
+    font-size: 12px !important;
+    line-height: 1.6 !important;
+    color: var(--ink) !important;
+  }
+  #sidebar #clubSpeakersMount > div > div:first-child > div {
+    font-size: 10px !important;
+    letter-spacing: 1px !important;
+    font-weight: 600 !important;
+    color: var(--ink-muted) !important;
+    margin-bottom: 5px !important;
+  }
 
   /* SCL's shared .sbox-btn (Rear PA on/off, density/capacity toggles) ships
      with a rounded teal-outline "active" state (sidebar-controls.css) —
@@ -69,16 +109,25 @@
      load-order contract (tokens -> engine CSS -> consumer overrides),
      matching the .seg-btn active-fill convention already used below. */
   .sbox-btn {
-    border-radius: 0;
-    border: 1px solid #1a1a1a;
+    border-radius: 6px;
+    /* engine .sbox-btn is inline-flex — centre its content */
+    justify-content: center;
+    text-align: center;
+    border: 1px solid var(--line);
     background: #ffffff;
-    color: #1a1a1a;
+    color: var(--ink);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.2px;
+    padding-top: 7px;
+    padding-bottom: 7px;
+    transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
   }
-  .sbox-btn:hover { background: #f2f2f2; border-color: #1a1a1a; }
+  .sbox-btn:hover { background: #F7F5F2; border-color: var(--ink-muted); }
   .sbox-btn.active {
-    background: #1a1a1a;
-    color: #ffffff;
-    border-color: #1a1a1a;
+    background: var(--ink);
+    color: #FAFAF8;
+    border-color: var(--ink);
   }
 
   /* Floating UI from ecommerce */
@@ -188,14 +237,16 @@
       var(--border, #E8E8E8) var(--fill, 50%)
     );
   }
+  /* Round thumb (measurely-ui slider spec): white dot, 2px ink ring —
+     replaces the earlier rectangular block thumbs. */
   .measurely-slider::-webkit-slider-thumb {
     appearance: none;
     -webkit-appearance: none;
-    width: 12px;
-    height: 20px;
-    border-radius: 0;
-    background: var(--text-primary);
-    border: none;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: #ffffff;
+    border: 2px solid var(--ink);
     box-shadow: none;
     cursor: grab;
     transition: background 0.1s ease;
@@ -203,26 +254,26 @@
   .measurely-slider:active::-webkit-slider-thumb {
     cursor: grabbing;
     transform: none;
-    background: #333333;
+    background: #F2F0ED;
   }
   .measurely-slider::-moz-range-thumb {
-    width: 12px;
-    height: 20px;
-    border-radius: 0;
-    background: var(--text-primary);
-    border: none;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: #ffffff;
+    border: 2px solid var(--ink);
     box-shadow: none;
     cursor: grab;
     transition: background 0.1s ease;
   }
   .measurely-slider:active::-moz-range-thumb {
     cursor: grabbing;
-    background: #333333;
+    background: #F2F0ED;
   }
   @media (pointer: coarse) {
     .measurely-slider { height: 4px; }
-    .measurely-slider::-webkit-slider-thumb { width: 16px; height: 28px; }
-    .measurely-slider::-moz-range-thumb { width: 16px; height: 28px; }
+    .measurely-slider::-webkit-slider-thumb { width: 20px; height: 20px; }
+    .measurely-slider::-moz-range-thumb { width: 20px; height: 20px; }
   }
 
   /* ══════════════════════════════════════════════════════════════════
